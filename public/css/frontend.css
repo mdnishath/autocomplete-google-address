@@ -1,0 +1,309 @@
+/**
+ * Autocomplete Google Address - Frontend Styles
+ */
+.aga-autocomplete-dropdown {
+    position: absolute;
+    z-index: 99999;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-height: 250px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.aga-dropdown-above {
+    border-top: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.aga-autocomplete-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.15s ease;
+}
+
+.aga-autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.aga-autocomplete-item:hover,
+.aga-autocomplete-item--active {
+    background-color: #f5f5f5;
+}
+
+/* Loading & Status Messages */
+.aga-autocomplete-status {
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #888;
+    text-align: center;
+    cursor: default;
+}
+
+/* Google Attribution */
+.aga-autocomplete-attribution {
+    padding: 6px 14px;
+    text-align: right;
+    border-top: 1px solid #f0f0f0;
+    cursor: default;
+    background: #fafafa;
+}
+
+.aga-autocomplete-attribution img {
+    display: inline-block;
+    vertical-align: middle;
+    opacity: 0.7;
+}
+
+/* Geolocation Button */
+.aga-geolocation-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    border-radius: 4px;
+    transition: color 0.2s ease, background-color 0.2s ease;
+    z-index: 2;
+}
+
+.aga-geolocation-btn:hover {
+    color: #2271b1;
+    background-color: rgba(34, 113, 177, 0.08);
+}
+
+.aga-geolocation-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.3);
+}
+
+.aga-geolocation-btn svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.aga-geolocation-btn.aga-loading svg {
+    display: none;
+}
+
+.aga-geolocation-btn.aga-loading::after {
+    content: '';
+    display: block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ccc;
+    border-top-color: #2271b1;
+    border-radius: 50%;
+    animation: aga-spin 0.6s linear infinite;
+}
+
+@keyframes aga-spin {
+    to { transform: rotate(360deg); }
+}
+
+.aga-geolocation-error {
+    position: absolute;
+    z-index: 99999;
+    background: #333;
+    color: #fff;
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 6px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: aga-fade-in 0.2s ease;
+}
+
+.aga-geolocation-error::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    right: 10px;
+    width: 8px;
+    height: 8px;
+    background: #333;
+    transform: rotate(45deg);
+}
+
+@keyframes aga-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Map Preview */
+.aga-map-preview {
+    width: 100%;
+    height: 200px;
+    margin-top: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    overflow: hidden;
+}
+
+/* Shortcode Wrapper */
+.aga-shortcode-wrapper {
+    max-width: 600px;
+    margin: 0 0 20px;
+}
+
+.aga-shortcode-label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+.aga-shortcode-input-wrapper {
+    position: relative;
+}
+
+.aga-shortcode-input {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.aga-shortcode-input:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.aga-shortcode-input::placeholder {
+    color: #999;
+}
+
+.aga-shortcode-map {
+    margin-top: 12px;
+}
+
+/* Address Validation Badge */
+.aga-validation-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    line-height: 1;
+    border-radius: 12px;
+    vertical-align: middle;
+    margin-top: 4px;
+    padding: 4px 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.aga-validation-badge.aga-validation-visible {
+    opacity: 1;
+}
+
+/* Loading spinner */
+.aga-validation-badge.aga-validation-loading {
+    opacity: 1;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ddd;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: aga-validation-spin 0.6s linear infinite;
+    font-size: 0;
+    margin-top: 6px;
+}
+
+@keyframes aga-validation-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Valid - green checkmark */
+.aga-validation-badge.aga-validation-valid {
+    color: #15803d;
+    background: #dcfce7;
+    border: 1px solid #bbf7d0;
+}
+
+/* Warning - yellow warning */
+.aga-validation-badge.aga-validation-warning {
+    color: #a16207;
+    background: #fef9c3;
+    border: 1px solid #fde68a;
+}
+
+/* Invalid - red X */
+.aga-validation-badge.aga-validation-invalid {
+    color: #dc2626;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+}
+
+/* Saved Addresses / Address Book */
+.aga-saved-header {
+    padding: 8px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: default;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.aga-saved-item {
+    padding-left: 28px;
+    position: relative;
+}
+
+.aga-saved-item::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12 6 12 12 16 14'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.aga-saved-divider {
+    height: 0;
+    border: none;
+    border-top: 1px solid #e5e5e5;
+    margin: 0;
+    padding: 0;
+    cursor: default;
+}

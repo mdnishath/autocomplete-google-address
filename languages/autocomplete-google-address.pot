@@ -1,0 +1,355 @@
+# Copyright (C) 2026 Md Nishath Khandakar
+# This file is distributed under the same license as the Autocomplete Google Address package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Autocomplete Google Address 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/autocomplete-google-address\n"
+"POT-Creation-Date: 2026-01-10 10:00:00+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2026-01-10 10:00:00+00:00\n"
+"Last-Translator: Md Nishath Khandakar <nishathkhandakar@gmail.com>\n"
+"Language-Team: Md Nishath Khandakar <nishathkhandakar@gmail.com>\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 2.2\n"
+"X-Domain: autocomplete-google-address\n"
+
+#. Plugin Name of the plugin/theme
+msgid "Autocomplete Google Address"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Add Google Places address autocomplete to any existing form in WordPress using a selector-based mapping builder."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Md Nishath Khandakar"
+msgstr ""
+
+#: includes/class-aga-admin.php:110
+msgid "Google Address"
+msgstr ""
+
+#: includes/class-aga-admin.php:118
+msgid "All Configurations"
+msgstr ""
+
+#: includes/class-aga-admin.php:119
+msgid "All Configs"
+msgstr ""
+
+#: includes/class-aga-admin.php:125
+msgid "Add New Configuration"
+msgstr ""
+
+#: includes/class-aga-admin.php:126
+msgid "Add New"
+msgstr ""
+
+#: includes/class-aga-admin.php:132
+#: includes/class-aga-admin.php:133
+msgid "Settings"
+msgstr ""
+
+#: includes/class-aga-admin.php:139
+#: includes/class-aga-admin.php:140
+msgid "Help"
+msgstr ""
+
+#: includes/class-aga-settings.php:47
+msgid "Google Maps API Settings"
+msgstr ""
+
+#: includes/class-aga-settings.php:54
+msgid "Google Maps API Key"
+msgstr ""
+
+#: includes/class-aga-settings.php:61
+msgid "Conflict Handling"
+msgstr ""
+
+#: includes/class-aga-settings.php:68
+msgid "Default Language"
+msgstr ""
+
+#: includes/class-aga-settings.php:75
+msgid "Default Country Restriction"
+msgstr ""
+
+#: includes/class-aga-settings.php:110
+msgid "Enter your Google Maps API settings below. The API key is required for the autocomplete functionality to work."
+msgstr ""
+
+#: includes/class-aga-settings.php:120
+msgid "You must enable the <strong>Places API</strong> and <strong>Maps JavaScript API</strong> in your Google Cloud Platform console."
+msgstr ""
+
+#: includes/class-aga-settings.php:129
+msgid "Do not load Google Maps JS API"
+msgstr ""
+
+#: includes/class-aga-settings.php:130
+msgid "Check this box if your theme or another plugin already loads the Google Maps JavaScript API. This will prevent conflicts from loading the API twice."
+msgstr ""
+
+#: includes/class-aga-settings.php:139
+msgid "Enter a language code (e.g., \"fr\" for French). If empty, it will default to the user's browser language."
+msgstr ""
+
+#: includes/class-aga-settings.php:148
+msgid "Enter a two-letter country code (e.g., \"US\" for United States) to restrict autocomplete results to a specific country."
+msgstr ""
+
+#: includes/class-aga-forms.php:24
+msgctxt "Post type general name"
+msgid "Address Forms"
+msgstr ""
+
+#: includes/class-aga-forms.php:25
+msgctxt "Post type singular name"
+msgid "Address Form"
+msgstr ""
+
+#: includes/class-aga-forms.php:26
+msgctxt "Admin Menu text"
+msgid "Address Forms"
+msgstr ""
+
+#: includes/class-aga-forms.php:27
+msgctxt "Add New on Toolbar"
+msgid "Address Form"
+msgstr ""
+
+#: includes/class-aga-forms.php:30
+msgid "Add New Form Config"
+msgstr ""
+
+#: includes/class-aga-forms.php:31
+msgid "New Form Config"
+msgstr ""
+
+#: includes/class-aga-forms.php:32
+msgid "Edit Form Config"
+msgstr ""
+
+#: includes/class-aga-forms.php:33
+msgid "View Form Config"
+msgstr ""
+
+#: includes/class-aga-forms.php:35
+msgid "Search Form Configs"
+msgstr ""
+
+#: includes/class-aga-forms.php:36
+msgid "Parent Form Configs:"
+msgstr ""
+
+#: includes/class-aga-forms.php:37
+msgid "No form configs found."
+msgstr ""
+
+#: includes/class-aga-forms.php:38
+msgid "No form configs found in Trash."
+msgstr ""
+
+#: includes/class-aga-forms.php:61
+msgid "Form Configuration"
+msgstr ""
+
+#: includes/class-aga-forms.php:68
+msgid "Shortcode"
+msgstr ""
+
+#: includes/class-aga-forms.php:84
+msgid "Please save the configuration to generate the shortcode."
+msgstr ""
+
+#: includes/class-aga-forms.php:89
+msgid "Copy this shortcode and paste it into your post, page, or text widget content."
+msgstr ""
+
+#: includes/class-aga-forms.php:164
+msgid "Mode"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:26
+msgid "Single Line"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:30
+msgid "Smart Mapping"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:38
+msgid "Main Autocomplete Field Selector"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:40
+msgid "Enter the CSS selector for the input field that will trigger the address autocomplete."
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:45
+msgid "Language Override"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:47
+msgid "Leave empty to use the global setting. Enter a language code to override it for this form."
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:53
+msgid "Single Line Mode Options"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:54
+msgid "Optionally, save location data to hidden fields."
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:57
+msgid "Latitude Selector"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:61
+msgid "Longitude Selector"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:65
+msgid "Place ID Selector"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:71
+msgid "Smart Mapping Mode Options"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:72
+msgid "Map each address component to a specific field selector."
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:75
+msgid "Street"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:79
+msgid "City"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:83
+msgid "State/Region"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:87
+msgid "Zip/Postal Code"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:91
+msgid "Country"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:95
+msgid "Latitude"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:99
+msgid "Longitude"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:104
+msgid "Formatting Options"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:107
+msgid "State Format"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:109
+msgid "Long (e.g., California)"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:110
+msgid "Short (e.g., CA)"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:114
+msgid "Country Format"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:116
+msgid "Long (e.g., United States)"
+msgstr ""
+
+#: admin/views/html-admin-page-form-edit.php:117
+msgid "Short (e.g., US)"
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:16
+msgid "How to Use"
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:18
+msgid "1. Configure your Settings"
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:19
+msgid "Go to <strong>Google Address &raquo; Settings</strong> and enter your Google Maps API key. This is required for the plugin to work."
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:21
+msgid "2. Create a New Form Configuration"
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:22
+msgid "Go to <strong>Google Address &raquo; Add New</strong>. Give your configuration a name and choose a mode (Single Line or Smart Mapping)."
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:24
+msgid "3. Find Your Field Selectors"
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:25
+msgid "Go to the page on your site with the form you want to add autocomplete to. Right-click on the form field and choose \"Inspect\" from the browser menu. Find the `id` or `class` of the input field."
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:26
+msgid "If it has an ID (e.g., `id=\"billing_address_1\"`), your selector is `#billing_address_1`."
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:27
+msgid "If it has a class (e.g., `class=\"address-field\"`), your selector is `.address-field`."
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:29
+msgid "4. Configure the Mapping"
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:30
+msgid "Copy the selector and paste it into the \"Main Autocomplete Field Selector\" field in your configuration. If you are using Smart Mapping, do the same for all the other address fields."
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:32
+msgid "5. Add the Shortcode to Your Page"
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:33
+msgid "After saving your configuration, a shortcode will be generated (e.g., `[aga_form id=\"123\"]`). Copy this shortcode and paste it into the content of the page where your form is located. The shortcode itself does not display anything; it just loads the necessary scripts."
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:35
+msgid "For Developers"
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:36
+msgid "You can also use the PHP function `aga_render_form_config( $id )` in your theme templates to load a configuration programmatically."
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:46
+msgid "Plugin Resources"
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:48
+msgid "Support Forum"
+msgstr ""
+
+#: admin/views/html-admin-page-help.php:49
+msgid "Rate this Plugin"
+msgstr ""

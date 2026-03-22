@@ -1,0 +1,1919 @@
+/**
+ * Autocomplete Google Address - Admin Design System
+ *
+ * A unified design system using CSS custom properties.
+ * All colors reference design tokens defined in :root.
+ *
+ * Table of Contents:
+ *  0. Design Tokens
+ *  1. Base & Reset
+ *  2. Cards
+ *  3. Tabs
+ *  4. Toggle Switch
+ *  5. Buttons
+ *  6. Form Fields
+ *  7. Badges
+ *  8. Notices
+ *  9. Premium Overlay
+ * 10. Mode Selector
+ * 11. Tooltip
+ * 12. Config Columns
+ * 13. Preset Selector
+ * 14. Page: Settings
+ * 15. Page: Wizard
+ * 16. Page: Help
+ * 17. Page: Analytics
+ * 18. WhatsApp Widget
+ * 19. Select2 Overrides
+ * 20. Utilities
+ * 21. Responsive
+ */
+
+
+/* ==========================================================================
+   0. Design Tokens
+   ========================================================================== */
+
+:root {
+    --aga-primary: #3858e9;
+    --aga-primary-hover: #2a45c0;
+    --aga-primary-light: #eef1fd;
+    --aga-primary-rgb: 56, 88, 233;
+
+    --aga-success: #22c55e;
+    --aga-success-light: #f0fdf4;
+    --aga-warning: #f59e0b;
+    --aga-warning-light: #fffbeb;
+    --aga-danger: #ef4444;
+    --aga-danger-light: #fef2f2;
+
+    --aga-text: #1e293b;
+    --aga-text-secondary: #64748b;
+    --aga-text-muted: #94a3b8;
+    --aga-border: #e2e8f0;
+    --aga-border-light: #f1f5f9;
+    --aga-bg: #f8fafc;
+    --aga-bg-card: #ffffff;
+
+    --aga-space-xs: 4px;
+    --aga-space-sm: 8px;
+    --aga-space-md: 16px;
+    --aga-space-lg: 24px;
+    --aga-space-xl: 32px;
+    --aga-space-2xl: 48px;
+
+    --aga-radius-sm: 6px;
+    --aga-radius-md: 8px;
+    --aga-radius-lg: 12px;
+    --aga-radius-xl: 16px;
+    --aga-radius-full: 9999px;
+
+    --aga-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --aga-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --aga-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+
+    --aga-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --aga-font-size-xs: 11px;
+    --aga-font-size-sm: 13px;
+    --aga-font-size-md: 14px;
+    --aga-font-size-lg: 16px;
+    --aga-font-size-xl: 20px;
+    --aga-font-size-2xl: 24px;
+
+    --aga-pro-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --aga-transition: 0.2s ease;
+}
+
+
+/* ==========================================================================
+   1. Base & Reset
+   ========================================================================== */
+
+.aga-wrap {
+    max-width: 1200px;
+    padding: var(--aga-space-lg) var(--aga-space-md);
+    font-family: var(--aga-font);
+    color: var(--aga-text);
+}
+
+.aga-form-config-wrapper,
+#aga-settings-page {
+    margin-top: var(--aga-space-lg);
+    padding-bottom: 150px;
+}
+
+#wpfooter {
+    position: relative !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px var(--aga-space-lg);
+    color: var(--aga-text-secondary);
+}
+
+
+/* ==========================================================================
+   2. Cards
+   ========================================================================== */
+
+/* Unified card component */
+.aga-card,
+.aga-box,
+.aga-diagnostics-card,
+.aga-sidebar-card,
+.aga-howto-card {
+    background: var(--aga-bg-card);
+    border: 1px solid var(--aga-border);
+    box-shadow: var(--aga-shadow-sm);
+    border-radius: var(--aga-radius-md);
+    margin-bottom: var(--aga-space-lg);
+    transition: box-shadow var(--aga-transition);
+}
+
+.aga-card:hover,
+.aga-box:hover,
+.aga-diagnostics-card:hover,
+.aga-sidebar-card:hover,
+.aga-howto-card:hover {
+    box-shadow: var(--aga-shadow-md);
+}
+
+/* Card headers */
+.aga-card-header,
+.aga-box-header,
+.aga-diagnostics-header,
+.aga-sidebar-card-header,
+.aga-howto-header {
+    border-bottom: 1px solid var(--aga-border);
+    padding: var(--aga-space-md) var(--aga-space-lg);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.aga-diagnostics-header {
+    justify-content: space-between;
+}
+
+.aga-sidebar-card-header {
+    padding: var(--aga-space-sm) var(--aga-space-md);
+}
+
+.aga-card-header h2,
+.aga-box-header h2,
+.aga-diagnostics-header h2,
+.aga-howto-header h2 {
+    margin: 0;
+    font-size: var(--aga-font-size-lg);
+    padding: 0;
+    font-weight: 600;
+    color: var(--aga-text);
+}
+
+.aga-diagnostics-header h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--aga-space-sm);
+}
+
+.aga-sidebar-card-header h3 {
+    margin: 0;
+    font-size: var(--aga-font-size-md);
+    font-weight: 600;
+    color: var(--aga-text);
+}
+
+.aga-box-header .dashicons {
+    color: var(--aga-text-secondary);
+}
+
+/* Card bodies */
+.aga-card-body,
+.aga-box-body,
+.aga-diagnostics-body,
+.aga-howto-body {
+    padding: var(--aga-space-lg);
+    line-height: 1.7;
+}
+
+.aga-sidebar-card-body {
+    padding: var(--aga-space-md);
+    font-size: var(--aga-font-size-sm);
+    line-height: 1.6;
+}
+
+.aga-box-body hr,
+.aga-card-body hr {
+    border: 0;
+    border-top: 1px solid var(--aga-border);
+    margin: var(--aga-space-lg) 0;
+}
+
+/* Sidebar card lists */
+.aga-sidebar-card-body ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.aga-sidebar-card-body ul li {
+    padding: var(--aga-space-sm) 0;
+    border-bottom: 1px solid var(--aga-border-light);
+}
+
+.aga-sidebar-card-body ul li:last-child {
+    border-bottom: none;
+}
+
+.aga-sidebar-card-body ul li a {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: var(--aga-space-sm);
+    color: var(--aga-primary);
+    transition: color var(--aga-transition);
+}
+
+.aga-sidebar-card-body ul li a:hover {
+    color: var(--aga-primary-hover);
+}
+
+.aga-sidebar-card-body ul li a .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: var(--aga-text-secondary);
+}
+
+/* Howto body specifics */
+.aga-howto-body h3 {
+    margin-top: 18px;
+    margin-bottom: 6px;
+    font-size: var(--aga-font-size-md);
+    color: var(--aga-text);
+}
+
+.aga-howto-body h3:first-child {
+    margin-top: 0;
+}
+
+
+/* ==========================================================================
+   3. Tabs
+   ========================================================================== */
+
+.aga-tabs,
+.aga-settings-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--aga-border);
+    margin: var(--aga-space-lg) 0 0;
+    padding: 0;
+}
+
+.aga-tab,
+.aga-settings-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--aga-space-sm);
+    padding: 10px 18px;
+    background: var(--aga-bg);
+    border: 1px solid var(--aga-border);
+    border-bottom: none;
+    border-radius: var(--aga-radius-sm) var(--aga-radius-sm) 0 0;
+    margin-bottom: -2px;
+    cursor: pointer;
+    font-size: var(--aga-font-size-md);
+    font-weight: 500;
+    color: var(--aga-text-secondary);
+    transition: background var(--aga-transition), color var(--aga-transition);
+    line-height: 1.4;
+}
+
+.aga-tab:hover,
+.aga-settings-tab:hover {
+    background: var(--aga-border);
+    color: var(--aga-text);
+}
+
+.aga-tab.active,
+.aga-settings-tab.active {
+    background: var(--aga-bg-card);
+    border-bottom: 2px solid var(--aga-bg-card);
+    color: var(--aga-text);
+    font-weight: 600;
+}
+
+.aga-tab .dashicons,
+.aga-settings-tab .dashicons {
+    font-size: var(--aga-font-size-lg);
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+}
+
+.aga-tab-badge {
+    display: inline-block;
+    background: var(--aga-pro-gradient);
+    color: var(--aga-bg-card);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: var(--aga-radius-sm);
+    line-height: 1.5;
+    letter-spacing: 0.5px;
+}
+
+/* Tab panels */
+.aga-tab-panel,
+.aga-settings-panel {
+    display: none;
+    padding-top: var(--aga-space-lg);
+}
+
+.aga-tab-panel.active,
+.aga-settings-panel.active {
+    display: block;
+}
+
+
+/* ==========================================================================
+   4. Toggle Switch
+   ========================================================================== */
+
+.aga-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.aga-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.aga-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--aga-text-muted);
+    transition: background-color 0.3s ease;
+    border-radius: var(--aga-radius-full);
+}
+
+.aga-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--aga-bg-card);
+    transition: transform 0.3s ease;
+    border-radius: 50%;
+    box-shadow: var(--aga-shadow-sm);
+}
+
+input:checked + .aga-slider {
+    background-color: var(--aga-primary);
+}
+
+input:checked + .aga-slider:before {
+    transform: translateX(20px);
+}
+
+input:focus + .aga-slider {
+    box-shadow: 0 0 0 3px var(--aga-primary-light);
+}
+
+
+/* ==========================================================================
+   5. Buttons
+   ========================================================================== */
+
+.aga-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--aga-space-sm);
+    padding: 10px 20px;
+    font-size: var(--aga-font-size-md);
+    font-weight: 600;
+    font-family: var(--aga-font);
+    border-radius: var(--aga-radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--aga-transition);
+    line-height: 1.4;
+}
+
+.aga-btn-primary {
+    background: var(--aga-primary);
+    color: var(--aga-bg-card);
+    border-color: var(--aga-primary);
+}
+
+.aga-btn-primary:hover {
+    background: var(--aga-primary-hover);
+    border-color: var(--aga-primary-hover);
+    color: var(--aga-bg-card);
+}
+
+.aga-btn-secondary {
+    background: var(--aga-bg);
+    color: var(--aga-text);
+    border-color: var(--aga-border);
+}
+
+.aga-btn-secondary:hover {
+    background: var(--aga-border);
+    color: var(--aga-text);
+}
+
+.aga-btn-outline {
+    background: transparent;
+    color: var(--aga-primary);
+    border-color: var(--aga-primary);
+}
+
+.aga-btn-outline:hover {
+    background: var(--aga-primary-light);
+    color: var(--aga-primary-hover);
+}
+
+.aga-btn-danger {
+    background: var(--aga-danger);
+    color: var(--aga-bg-card);
+    border-color: var(--aga-danger);
+}
+
+.aga-btn-danger:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: var(--aga-bg-card);
+}
+
+/* Override WP button-primary within plugin scope */
+.aga-wrap .button-primary,
+#aga-settings-page .button-primary,
+.aga-form-config-wrapper .button-primary {
+    background: var(--aga-primary);
+    border-color: var(--aga-primary);
+    box-shadow: none;
+    text-shadow: none;
+}
+
+.aga-wrap .button-primary:hover,
+#aga-settings-page .button-primary:hover,
+.aga-form-config-wrapper .button-primary:hover {
+    background: var(--aga-primary-hover);
+    border-color: var(--aga-primary-hover);
+}
+
+
+/* ==========================================================================
+   6. Form Fields
+   ========================================================================== */
+
+.aga-field-group {
+    margin-bottom: var(--aga-space-lg);
+}
+
+.aga-field-group label {
+    display: block;
+    margin-bottom: var(--aga-space-sm);
+    font-weight: 600;
+    color: var(--aga-text);
+}
+
+.aga-field-group input[type="text"],
+.aga-field-group select,
+.aga-input,
+.aga-select {
+    width: 100%;
+    padding: var(--aga-space-sm) var(--aga-space-sm);
+    font-size: var(--aga-font-size-md);
+    font-family: var(--aga-font);
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-sm);
+    color: var(--aga-text);
+    background: var(--aga-bg-card);
+    transition: border-color var(--aga-transition), box-shadow var(--aga-transition);
+}
+
+.aga-field-group input[type="text"]:focus,
+.aga-field-group select:focus,
+.aga-input:focus,
+.aga-select:focus {
+    border-color: var(--aga-primary);
+    box-shadow: 0 0 0 3px var(--aga-primary-light);
+    outline: none;
+}
+
+.aga-field-group p.description {
+    font-size: var(--aga-font-size-sm);
+    color: var(--aga-text-secondary);
+    margin-top: var(--aga-space-sm);
+    font-style: normal;
+}
+
+.aga-field-group input:disabled,
+.aga-field-group select:disabled {
+    background-color: var(--aga-bg);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+
+/* ==========================================================================
+   7. Badges
+   ========================================================================== */
+
+/* Pro badge - unified for all pro badge variants */
+.aga-badge-pro,
+.aga-pro-badge,
+.aga-wizard-pro-badge {
+    display: inline-block;
+    background: var(--aga-pro-gradient);
+    color: var(--aga-bg-card);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--aga-radius-full);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+    margin-left: var(--aga-space-sm);
+    line-height: 1.5;
+}
+
+/* Status badges */
+.aga-badge-success {
+    display: inline-block;
+    background: var(--aga-success-light);
+    color: var(--aga-success);
+    font-size: var(--aga-font-size-xs);
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--aga-radius-full);
+}
+
+.aga-badge-warning {
+    display: inline-block;
+    background: var(--aga-warning-light);
+    color: var(--aga-warning);
+    font-size: var(--aga-font-size-xs);
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--aga-radius-full);
+}
+
+.aga-badge-danger {
+    display: inline-block;
+    background: var(--aga-danger-light);
+    color: var(--aga-danger);
+    font-size: var(--aga-font-size-xs);
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--aga-radius-full);
+}
+
+
+/* ==========================================================================
+   8. Notices
+   ========================================================================== */
+
+.aga-notice {
+    padding: var(--aga-space-sm) var(--aga-space-md);
+    border-radius: var(--aga-radius-sm);
+    margin-bottom: var(--aga-space-md);
+    font-size: var(--aga-font-size-sm);
+    border-left: 4px solid transparent;
+}
+
+.aga-notice-info {
+    background: var(--aga-primary-light);
+    border-left-color: var(--aga-primary);
+    color: var(--aga-text);
+}
+
+.aga-notice-success {
+    background: var(--aga-success-light);
+    border-left-color: var(--aga-success);
+    color: var(--aga-text);
+}
+
+.aga-notice-warning {
+    background: var(--aga-warning-light);
+    border-left-color: var(--aga-warning);
+    color: var(--aga-text);
+}
+
+.aga-notice-error {
+    background: var(--aga-danger-light);
+    border-left-color: var(--aga-danger);
+    color: var(--aga-text);
+}
+
+
+/* ==========================================================================
+   9. Premium Overlay (.aga-pro-gate)
+   ========================================================================== */
+
+.aga-premium-gated-content,
+.aga-pro-gate {
+    position: relative;
+}
+
+.aga-premium-overlay,
+.aga-pro-gate-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 10;
+    border-radius: var(--aga-radius-md);
+}
+
+.aga-premium-overlay .aga-premium-message,
+.aga-pro-gate-message {
+    background: rgba(255, 255, 255, 0.97);
+    border: 1px solid var(--aga-border);
+    padding: var(--aga-space-lg) var(--aga-space-xl);
+    border-radius: var(--aga-radius-lg);
+    box-shadow: var(--aga-shadow-lg);
+    max-width: 400px;
+    line-height: 1.5;
+}
+
+.aga-premium-overlay .aga-premium-message h3,
+.aga-pro-gate-message h3 {
+    margin: 10px 0 5px;
+    color: var(--aga-text);
+}
+
+.aga-premium-overlay .aga-premium-message p,
+.aga-pro-gate-message p {
+    color: var(--aga-text-secondary);
+    font-size: var(--aga-font-size-md);
+}
+
+.aga-premium-overlay .aga-premium-message a.button-primary {
+    margin-top: var(--aga-space-md);
+    background: var(--aga-primary);
+    border-color: var(--aga-primary);
+    box-shadow: none;
+    text-shadow: none;
+    border-radius: var(--aga-radius-sm);
+}
+
+.aga-premium-overlay .aga-premium-message a.button-primary:hover {
+    background: var(--aga-primary-hover);
+    border-color: var(--aga-primary-hover);
+}
+
+/* Legacy premium lock text */
+.aga-premium-locked-icon {
+    color: var(--aga-danger);
+    font-size: 1.2em;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.aga-premium-locked-text {
+    font-weight: 600;
+    color: var(--aga-danger);
+    vertical-align: middle;
+}
+
+.aga-premium-upgrade-link {
+    margin-left: 10px;
+    display: inline-block;
+    text-decoration: none;
+    color: var(--aga-primary);
+    font-weight: 600;
+}
+
+.aga-premium-upgrade-link:hover {
+    color: var(--aga-primary-hover);
+}
+
+/* Pro Upgrade Banner */
+.aga-pro-banner {
+    background: var(--aga-pro-gradient);
+    border-radius: var(--aga-radius-md);
+    padding: var(--aga-space-xl);
+    text-align: center;
+    color: var(--aga-bg-card);
+    margin-bottom: var(--aga-space-lg);
+}
+
+.aga-pro-banner h3 {
+    color: var(--aga-bg-card);
+    margin: 0 0 10px;
+    font-size: var(--aga-font-size-xl);
+}
+
+.aga-pro-banner p {
+    margin: 0 0 var(--aga-space-lg);
+    opacity: 0.9;
+    font-size: var(--aga-font-size-md);
+}
+
+.aga-pro-banner .button {
+    background: var(--aga-bg-card);
+    color: #764ba2;
+    border: none;
+    font-weight: 600;
+    padding: var(--aga-space-sm) var(--aga-space-lg);
+    font-size: var(--aga-font-size-md);
+    border-radius: var(--aga-radius-sm);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--aga-transition);
+}
+
+.aga-pro-banner .button:hover {
+    background: var(--aga-bg);
+    color: #667eea;
+}
+
+
+/* ==========================================================================
+   10. Mode Selector
+   ========================================================================== */
+
+.aga-mode-selector {
+    display: flex;
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-sm);
+    overflow: hidden;
+}
+
+.aga-mode-selector input[type="radio"] {
+    display: none;
+}
+
+.aga-mode-selector label {
+    flex: 1;
+    text-align: center;
+    padding: 10px 15px;
+    margin: 0;
+    cursor: pointer;
+    background: var(--aga-bg);
+    color: var(--aga-text);
+    font-weight: 600;
+    border-left: 1px solid var(--aga-border);
+    transition: background var(--aga-transition), color var(--aga-transition);
+}
+
+.aga-mode-selector label:first-of-type {
+    border-left: 0;
+}
+
+.aga-mode-selector label:hover {
+    background: var(--aga-border);
+}
+
+.aga-mode-selector input[type="radio"]:checked + label {
+    background: var(--aga-primary);
+    color: var(--aga-bg-card);
+    border-color: var(--aga-primary);
+}
+
+/* Mode-specific content panels */
+.aga-mode-panel {
+    display: none;
+}
+
+.aga-mode-panel.active {
+    display: block;
+}
+
+/* Smart mapping fields grid */
+.aga-mapping-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--aga-space-lg);
+}
+
+
+/* ==========================================================================
+   11. Tooltip
+   ========================================================================== */
+
+.aga-tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+    margin-left: var(--aga-space-xs);
+    color: var(--aga-text-secondary);
+}
+
+.aga-tooltip .aga-tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    width: 250px;
+    background: var(--aga-text);
+    color: var(--aga-bg-card);
+    font-size: var(--aga-font-size-xs);
+    font-weight: 400;
+    text-align: left;
+    border-radius: var(--aga-radius-sm);
+    padding: var(--aga-space-sm) var(--aga-space-sm);
+    position: absolute;
+    z-index: 100;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: opacity var(--aga-transition);
+    line-height: 1.5;
+    box-shadow: var(--aga-shadow-md);
+}
+
+.aga-tooltip:hover .aga-tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+/* ==========================================================================
+   12. Config Columns
+   ========================================================================== */
+
+.aga-config-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--aga-space-lg);
+}
+
+.aga-config-col {
+    min-width: 0;
+}
+
+/* Toggle Grid — compact side-by-side toggles */
+.aga-toggle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--aga-space-md);
+}
+
+.aga-toggle-card {
+    background: var(--aga-bg);
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-md);
+    padding: var(--aga-space-md);
+    text-align: center;
+    transition: border-color var(--aga-transition), box-shadow var(--aga-transition);
+}
+
+.aga-toggle-card:hover {
+    border-color: var(--aga-primary);
+    box-shadow: var(--aga-shadow-sm);
+}
+
+.aga-toggle-card label {
+    display: block;
+    font-weight: 600;
+    font-size: var(--aga-font-size-sm);
+    color: var(--aga-text);
+    margin-bottom: var(--aga-space-sm);
+}
+
+.aga-toggle-card .aga-switch {
+    display: inline-flex;
+    margin-bottom: var(--aga-space-xs);
+}
+
+.aga-toggle-desc {
+    display: block;
+    font-size: var(--aga-font-size-xs);
+    color: var(--aga-text-muted);
+    margin-top: var(--aga-space-xs);
+}
+
+@media screen and (max-width: 782px) {
+    .aga-toggle-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Toggle Rows — vertical list with label left, switch right */
+.aga-toggle-grid--vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.aga-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--aga-space-sm) 0;
+    border-bottom: 1px solid var(--aga-border);
+}
+
+.aga-toggle-row:last-child {
+    border-bottom: none;
+}
+
+.aga-toggle-row-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.aga-toggle-row-info strong {
+    font-size: var(--aga-font-size-sm);
+    color: var(--aga-text);
+}
+
+.aga-toggle-row-info .aga-toggle-desc {
+    margin-top: 0;
+}
+
+
+/* ==========================================================================
+   13. Preset Selector
+   ========================================================================== */
+
+.aga-preset-selector {
+    margin-bottom: var(--aga-space-lg);
+    padding: 15px var(--aga-space-lg);
+    background: var(--aga-primary-light);
+    border: 1px solid rgba(var(--aga-primary-rgb), 0.2);
+    border-radius: var(--aga-radius-md);
+}
+
+.aga-preset-selector label {
+    font-weight: 600;
+    margin-bottom: var(--aga-space-sm);
+    display: block;
+    color: var(--aga-text);
+}
+
+.aga-preset-selector select {
+    width: 100%;
+}
+
+.aga-preset-selector p.description {
+    font-size: var(--aga-font-size-sm);
+    color: var(--aga-text-secondary);
+    margin-top: var(--aga-space-sm);
+}
+
+
+/* ==========================================================================
+   14. Page: Settings
+   ========================================================================== */
+
+/* API Key Row */
+.aga-api-key-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.aga-api-key-row .regular-text {
+    flex: 0 1 400px;
+}
+
+/* Key status */
+#aga-key-status,
+.aga-key-status {
+    font-weight: 600;
+    font-size: var(--aga-font-size-sm);
+}
+
+#aga-key-status.aga-key-valid,
+.aga-key-status.success {
+    color: var(--aga-success);
+}
+
+#aga-key-status.aga-key-invalid,
+.aga-key-status.error {
+    color: var(--aga-danger);
+}
+
+#aga-key-status.aga-key-checking {
+    color: var(--aga-warning);
+}
+
+/* Appearance grid */
+.aga-appearance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--aga-space-lg);
+}
+
+.aga-appearance-grid .aga-field-group label {
+    display: block;
+    margin-bottom: var(--aga-space-sm);
+}
+
+.aga-appearance-grid input[type="color"] {
+    width: 60px;
+    height: 36px;
+    padding: 2px;
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-sm);
+    cursor: pointer;
+}
+
+.aga-appearance-grid input[type="number"] {
+    width: 80px;
+}
+
+/* Live Preview */
+.aga-preview-dropdown {
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-sm);
+    background: var(--aga-bg-card);
+    overflow: hidden;
+    max-height: 250px;
+    box-shadow: var(--aga-shadow-md);
+}
+
+.aga-preview-item {
+    padding: 10px 14px;
+    font-size: var(--aga-font-size-md);
+    color: var(--aga-text);
+    cursor: default;
+    transition: background var(--aga-transition);
+    border-bottom: 1px solid var(--aga-border-light);
+}
+
+.aga-preview-item:last-child {
+    border-bottom: none;
+}
+
+.aga-preview-item:hover {
+    background: var(--aga-bg);
+}
+
+.aga-preview-attribution {
+    padding: var(--aga-space-sm) 14px;
+    font-size: var(--aga-font-size-xs);
+    color: var(--aga-text-muted);
+    background: var(--aga-bg);
+    text-align: center;
+    border-top: 1px solid var(--aga-border-light);
+}
+
+
+/* ==========================================================================
+   15. Page: Wizard
+   ========================================================================== */
+
+/* Scope WP admin overrides for wizard */
+.aga-wizard-wrap #wpcontent {
+    padding-left: 0 !important;
+}
+
+.aga-wizard-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    background: var(--aga-bg);
+    padding: 60px var(--aga-space-lg);
+    font-family: var(--aga-font);
+}
+
+.aga-wizard-card {
+    background: var(--aga-bg-card);
+    border-radius: var(--aga-radius-lg);
+    box-shadow: var(--aga-shadow-lg);
+    max-width: 700px;
+    width: 100%;
+    padding: var(--aga-space-2xl) 40px;
+}
+
+.aga-wizard-steps {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 36px;
+    gap: var(--aga-space-sm);
+}
+
+.aga-wizard-step-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--aga-border);
+    transition: background 0.3s ease;
+}
+
+.aga-wizard-step-indicator.active {
+    background: var(--aga-primary);
+}
+
+.aga-wizard-step-indicator.completed {
+    background: var(--aga-success);
+}
+
+.aga-wizard-heading {
+    font-size: var(--aga-font-size-2xl);
+    font-weight: 600;
+    color: var(--aga-text);
+    margin: 0 0 var(--aga-space-sm);
+    text-align: center;
+}
+
+.aga-wizard-subheading {
+    font-size: var(--aga-font-size-md);
+    color: var(--aga-text-secondary);
+    margin: 0 0 var(--aga-space-xl);
+    text-align: center;
+}
+
+.aga-wizard-label {
+    display: block;
+    font-size: var(--aga-font-size-md);
+    font-weight: 500;
+    color: var(--aga-text);
+    margin-bottom: var(--aga-space-sm);
+}
+
+.aga-wizard-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: var(--aga-font-size-md);
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-sm);
+    box-sizing: border-box;
+    transition: border-color var(--aga-transition), box-shadow var(--aga-transition);
+}
+
+.aga-wizard-input:focus {
+    border-color: var(--aga-primary);
+    box-shadow: 0 0 0 3px var(--aga-primary-light);
+    outline: none;
+}
+
+.aga-wizard-helper {
+    font-size: var(--aga-font-size-sm);
+    color: var(--aga-text-secondary);
+    margin-top: var(--aga-space-sm);
+}
+
+.aga-wizard-helper a {
+    color: var(--aga-primary);
+    text-decoration: none;
+}
+
+.aga-wizard-helper a:hover {
+    text-decoration: underline;
+}
+
+.aga-wizard-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--aga-space-sm);
+    background: var(--aga-primary);
+    color: var(--aga-bg-card);
+    border: none;
+    padding: 12px var(--aga-space-xl);
+    font-size: var(--aga-font-size-md);
+    font-weight: 500;
+    border-radius: var(--aga-radius-sm);
+    cursor: pointer;
+    transition: background var(--aga-transition);
+    min-width: 140px;
+    text-decoration: none;
+}
+
+.aga-wizard-btn:hover {
+    background: var(--aga-primary-hover);
+    color: var(--aga-bg-card);
+}
+
+.aga-wizard-btn:disabled {
+    background: var(--aga-text-muted);
+    cursor: not-allowed;
+}
+
+.aga-wizard-btn-wrap {
+    text-align: center;
+    margin-top: var(--aga-space-xl);
+}
+
+.aga-wizard-error {
+    color: var(--aga-danger);
+    font-size: var(--aga-font-size-sm);
+    margin-top: var(--aga-space-sm);
+    display: none;
+}
+
+/* Radio cards */
+.aga-wizard-radio-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--aga-space-sm);
+}
+
+.aga-wizard-radio-card {
+    position: relative;
+    border: 2px solid var(--aga-border);
+    border-radius: var(--aga-radius-md);
+    padding: var(--aga-space-md);
+    cursor: pointer;
+    transition: border-color var(--aga-transition), box-shadow var(--aga-transition);
+}
+
+.aga-wizard-radio-card:hover {
+    border-color: var(--aga-primary);
+}
+
+.aga-wizard-radio-card.selected {
+    border-color: var(--aga-primary);
+    box-shadow: 0 0 0 1px var(--aga-primary);
+    background: var(--aga-primary-light);
+}
+
+.aga-wizard-radio-card.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.aga-wizard-radio-card.disabled:hover {
+    border-color: var(--aga-border);
+}
+
+.aga-wizard-radio-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.aga-wizard-radio-card-title {
+    display: flex;
+    align-items: center;
+    gap: var(--aga-space-sm);
+    font-size: var(--aga-font-size-md);
+    font-weight: 600;
+    color: var(--aga-text);
+    margin-bottom: var(--aga-space-xs);
+}
+
+.aga-wizard-radio-card-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
+
+.aga-wizard-radio-card-desc {
+    font-size: var(--aga-font-size-sm);
+    color: var(--aga-text-secondary);
+    padding-left: var(--aga-space-xl);
+}
+
+/* Success step */
+.aga-wizard-success-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--aga-space-lg);
+}
+
+.aga-wizard-success-icon svg {
+    width: 64px;
+    height: 64px;
+}
+
+.aga-wizard-success-desc {
+    text-align: center;
+    font-size: var(--aga-font-size-md);
+    color: var(--aga-text-secondary);
+    margin: 0 0 var(--aga-space-sm);
+    line-height: 1.6;
+}
+
+/* Spinner */
+.aga-wizard-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--aga-bg-card);
+    border-radius: 50%;
+    animation: aga-wizard-spin 0.6s linear infinite;
+}
+
+@keyframes aga-wizard-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Step visibility */
+.aga-wizard-step {
+    display: none;
+}
+
+.aga-wizard-step.active {
+    display: block;
+}
+
+
+/* ==========================================================================
+   16. Page: Help
+   ========================================================================== */
+
+.aga-help-page {
+    max-width: 1100px;
+    margin-top: var(--aga-space-lg);
+}
+
+.aga-help-columns {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: var(--aga-space-lg);
+    align-items: start;
+}
+
+/* Quick Links */
+.aga-quick-links {
+    display: flex;
+    gap: var(--aga-space-sm);
+    margin-bottom: var(--aga-space-lg);
+    flex-wrap: wrap;
+}
+
+.aga-quick-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--aga-space-sm);
+    padding: 10px 18px;
+    background: var(--aga-bg-card);
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-sm);
+    text-decoration: none;
+    color: var(--aga-primary);
+    font-weight: 600;
+    font-size: var(--aga-font-size-sm);
+    transition: border-color var(--aga-transition), box-shadow var(--aga-transition);
+}
+
+.aga-quick-link:hover {
+    border-color: var(--aga-primary);
+    box-shadow: 0 1px 3px rgba(var(--aga-primary-rgb), 0.15);
+    color: var(--aga-primary-hover);
+}
+
+.aga-quick-link .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Health table */
+.aga-health-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.aga-health-table th {
+    text-align: left;
+    padding: 10px var(--aga-space-sm);
+    border-bottom: 2px solid var(--aga-border);
+    font-size: var(--aga-font-size-sm);
+    color: var(--aga-text-secondary);
+    font-weight: 600;
+}
+
+.aga-health-table td {
+    padding: var(--aga-space-sm);
+    border-bottom: 1px solid var(--aga-border-light);
+    font-size: var(--aga-font-size-sm);
+    vertical-align: middle;
+}
+
+.aga-health-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Status icons */
+.aga-status-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: var(--aga-font-size-md);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.aga-status-success {
+    background: var(--aga-success-light);
+    color: var(--aga-success);
+}
+
+.aga-status-error {
+    background: var(--aga-danger-light);
+    color: var(--aga-danger);
+}
+
+.aga-status-warning {
+    background: var(--aga-warning-light);
+    color: var(--aga-warning);
+}
+
+.aga-health-details {
+    color: var(--aga-text-secondary);
+}
+
+.aga-health-name {
+    font-weight: 600;
+    color: var(--aga-text);
+}
+
+/* Loading spinner */
+.aga-health-loading {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--aga-text-secondary);
+}
+
+.aga-health-loading .spinner {
+    float: none;
+    visibility: visible;
+    margin: 0 var(--aga-space-sm) 0 0;
+    vertical-align: middle;
+}
+
+/* Run diagnostics button */
+.aga-run-diagnostics-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--aga-space-sm);
+}
+
+/* System info */
+.aga-system-info {
+    font-size: var(--aga-font-size-sm);
+    color: var(--aga-text-secondary);
+}
+
+.aga-system-info p {
+    margin: var(--aga-space-xs) 0;
+}
+
+
+/* ==========================================================================
+   17. Page: Analytics
+   ========================================================================== */
+
+/* Pro upgrade CTA */
+.aga-analytics-upgrade {
+    max-width: 680px;
+    margin: 60px auto;
+    text-align: center;
+    padding: var(--aga-space-2xl) var(--aga-space-xl);
+    background: var(--aga-bg-card);
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-lg);
+    box-shadow: var(--aga-shadow-sm);
+}
+
+.aga-analytics-upgrade h2 {
+    margin: 0 0 var(--aga-space-sm);
+    font-size: var(--aga-font-size-2xl);
+    color: var(--aga-text);
+}
+
+.aga-analytics-upgrade p {
+    margin: 0 0 var(--aga-space-lg);
+    color: var(--aga-text-secondary);
+    font-size: 15px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.aga-analytics-upgrade .button-primary {
+    background: var(--aga-primary);
+    border-color: var(--aga-primary);
+    box-shadow: none;
+    text-shadow: none;
+    font-size: 15px;
+    padding: var(--aga-space-sm) var(--aga-space-xl);
+}
+
+/* Date range filters */
+.aga-analytics-filters {
+    margin: var(--aga-space-lg) 0 var(--aga-space-lg);
+    display: flex;
+    gap: var(--aga-space-sm);
+}
+
+.aga-analytics-range {
+    transition: all var(--aga-transition);
+}
+
+.aga-analytics-range--active {
+    background: var(--aga-primary);
+    border-color: var(--aga-primary);
+    color: var(--aga-bg-card);
+}
+
+/* Stat cards grid */
+.aga-analytics-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--aga-space-md);
+    margin-bottom: 28px;
+}
+
+.aga-analytics-card {
+    background: var(--aga-bg-card);
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-md);
+    padding: var(--aga-space-lg);
+    transition: box-shadow var(--aga-transition);
+}
+
+.aga-analytics-card:hover {
+    box-shadow: var(--aga-shadow-md);
+}
+
+.aga-analytics-card-label {
+    font-size: var(--aga-font-size-sm);
+    color: var(--aga-text-secondary);
+    margin-bottom: var(--aga-space-sm);
+}
+
+.aga-analytics-card-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--aga-text);
+}
+
+/* Chart wrap */
+.aga-analytics-chart-wrap {
+    background: var(--aga-bg-card);
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-md);
+    padding: var(--aga-space-lg);
+    margin-bottom: 28px;
+}
+
+.aga-analytics-chart-wrap h3 {
+    margin: 0 0 var(--aga-space-xs);
+    font-size: 15px;
+    color: var(--aga-text);
+}
+
+/* Tables */
+.aga-analytics-tables {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--aga-space-md);
+    margin-bottom: 28px;
+}
+
+.aga-analytics-table-wrap {
+    background: var(--aga-bg-card);
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-md);
+    padding: var(--aga-space-lg);
+}
+
+.aga-analytics-table-wrap h3 {
+    margin: 0 0 var(--aga-space-md);
+    font-size: 15px;
+    color: var(--aga-text);
+}
+
+
+/* ==========================================================================
+   18. WhatsApp Widget
+   ========================================================================== */
+
+#aga-whatsapp-widget {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 999999;
+    font-family: var(--aga-font);
+}
+
+#aga-whatsapp-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #25d366;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+    transition: transform var(--aga-transition), box-shadow var(--aga-transition);
+}
+
+#aga-whatsapp-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+}
+
+#aga-whatsapp-popup {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 340px;
+    max-width: calc(100vw - 48px);
+    background: var(--aga-bg-card);
+    border-radius: var(--aga-radius-lg);
+    box-shadow: var(--aga-shadow-lg);
+    flex-direction: column;
+    overflow: hidden;
+    animation: aga-wa-slide-up 0.25s ease-out;
+}
+
+@keyframes aga-wa-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.aga-wa-popup-header {
+    background: #075e54;
+    padding: var(--aga-space-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.aga-wa-popup-header-info {
+    display: flex;
+    align-items: center;
+    gap: var(--aga-space-sm);
+}
+
+.aga-wa-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #25d366;
+    color: var(--aga-bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.aga-wa-name {
+    color: var(--aga-bg-card);
+    font-weight: 600;
+    font-size: var(--aga-font-size-md);
+    line-height: 1.3;
+}
+
+.aga-wa-status {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: var(--aga-font-size-xs);
+}
+
+#aga-wa-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+#aga-wa-close:hover {
+    color: var(--aga-bg-card);
+}
+
+.aga-wa-popup-body {
+    padding: var(--aga-space-md);
+    background: #ece5dd;
+    min-height: 80px;
+}
+
+.aga-wa-message {
+    background: var(--aga-bg-card);
+    border-radius: 0 var(--aga-radius-md) var(--aga-radius-md) var(--aga-radius-md);
+    padding: 10px 14px;
+    font-size: var(--aga-font-size-sm);
+    line-height: 1.5;
+    color: var(--aga-text);
+    position: relative;
+    box-shadow: var(--aga-shadow-sm);
+    max-width: 85%;
+}
+
+.aga-wa-message::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -8px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid var(--aga-bg-card);
+    border-left: 8px solid transparent;
+}
+
+.aga-wa-message p {
+    margin: 0;
+}
+
+.aga-wa-time {
+    display: block;
+    text-align: right;
+    font-size: var(--aga-font-size-xs);
+    color: var(--aga-text-muted);
+    margin-top: var(--aga-space-xs);
+}
+
+.aga-wa-popup-footer {
+    padding: var(--aga-space-sm) var(--aga-space-md);
+    background: var(--aga-bg-card);
+}
+
+.aga-wa-send-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--aga-space-sm);
+    background: #25d366;
+    color: var(--aga-bg-card);
+    text-decoration: none;
+    padding: 10px var(--aga-space-lg);
+    border-radius: var(--aga-radius-full);
+    font-size: var(--aga-font-size-md);
+    font-weight: 600;
+    transition: background var(--aga-transition);
+    text-align: center;
+}
+
+.aga-wa-send-btn:hover {
+    background: #1da851;
+    color: var(--aga-bg-card);
+}
+
+
+/* ==========================================================================
+   19. Select2 Overrides
+   ========================================================================== */
+
+.select2-container--default .select2-selection--multiple {
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-sm);
+}
+
+.select2-container .select2-selection--multiple .select2-selection__choice {
+    background-color: var(--aga-primary) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--aga-primary-hover) !important;
+    border-radius: var(--aga-radius-sm) !important;
+    padding: 4px 8px !important;
+    margin: 3px 4px 3px 0 !important;
+    font-size: var(--aga-font-size-sm) !important;
+}
+
+.select2-container .select2-selection--multiple .select2-selection__choice__remove {
+    color: rgba(255, 255, 255, 0.7) !important;
+    margin-right: 5px;
+    font-size: 14px;
+}
+
+.select2-container .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #ffffff !important;
+}
+
+.select2-dropdown {
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-sm);
+}
+
+
+/* ==========================================================================
+   20. Utilities
+   ========================================================================== */
+
+.aga-icon-inline {
+    vertical-align: middle;
+}
+
+.aga-mt-sm { margin-top: var(--aga-space-sm); }
+.aga-mt-md { margin-top: var(--aga-space-md); }
+.aga-mb-sm { margin-bottom: var(--aga-space-sm); }
+.aga-mb-md { margin-bottom: var(--aga-space-md); }
+
+.aga-flex-row {
+    display: flex;
+    align-items: center;
+    gap: var(--aga-space-sm);
+}
+
+.aga-pro-gate-content {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.aga-text-center {
+    text-align: center;
+}
+
+.aga-text-muted {
+    color: var(--aga-text-muted);
+}
+
+
+/* ==========================================================================
+   21. Responsive
+   ========================================================================== */
+
+@media screen and (max-width: 1200px) {
+    .aga-config-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .aga-help-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media screen and (max-width: 782px) {
+    .aga-analytics-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .aga-analytics-tables {
+        grid-template-columns: 1fr;
+    }
+
+    .aga-tabs,
+    .aga-settings-nav {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .aga-tab,
+    .aga-settings-tab {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .aga-mapping-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .aga-wizard-radio-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    #aga-whatsapp-widget {
+        bottom: 16px;
+        right: 16px;
+    }
+
+    #aga-whatsapp-popup {
+        width: calc(100vw - 32px);
+        right: -8px;
+        bottom: 64px;
+    }
+
+    #aga-whatsapp-btn {
+        width: 48px;
+        height: 48px;
+    }
+
+    #aga-whatsapp-btn svg {
+        width: 24px;
+        height: 24px;
+    }
+}

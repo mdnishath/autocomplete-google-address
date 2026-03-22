@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { width: 256px; height: 256px; overflow: hidden; }
+
+.icon {
+    width: 256px;
+    height: 256px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle grid */
+.icon::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Glow */
+.icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(66, 133, 244, 0.2) 0%, transparent 70%);
+}
+
+.icon-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Pin icon */
+.pin-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 30px rgba(66, 133, 244, 0.4);
+    margin-bottom: 8px;
+}
+
+.pin-icon {
+    width: 40px;
+    height: 40px;
+}
+
+/* Search bar mockup */
+.search-bar {
+    width: 160px;
+    height: 28px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 6px;
+}
+.search-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+}
+.search-line {
+    flex: 1;
+    height: 2px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 1px;
+}
+.search-cursor {
+    width: 1px;
+    height: 14px;
+    background: #4285f4;
+}
+
+/* Plugin name */
+.plugin-name {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+    margin-top: 6px;
+    text-align: center;
+    line-height: 1.2;
+}
+.plugin-name .sub {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+<div class="icon">
+    <div class="icon-content">
+        <div class="pin-circle">
+            <svg class="pin-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#fff"/>
+                <circle cx="12" cy="9" r="3" fill="#4285f4"/>
+            </svg>
+        </div>
+        <div class="search-bar">
+            <div class="search-dot"></div>
+            <div class="search-line"></div>
+            <div class="search-cursor"></div>
+        </div>
+        <div class="plugin-name">
+            Google Address
+            <div class="sub">Autocomplete</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
