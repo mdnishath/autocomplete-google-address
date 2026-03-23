@@ -25,6 +25,16 @@ class AGA_Wizard {
             return;
         }
 
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+
+        // Don't redirect if already on the wizard page.
+        if ( isset( $_GET['page'] ) && 'aga-wizard' === $_GET['page'] ) {
+            delete_transient( 'aga_show_wizard' );
+            return;
+        }
+
         delete_transient( 'aga_show_wizard' );
 
         wp_safe_redirect( admin_url( 'admin.php?page=aga-wizard' ) );
@@ -32,6 +42,17 @@ class AGA_Wizard {
     }
 
     public function register_page() {
+        // Register as a hidden top-level page (not under CPT) so it's always accessible.
+        add_submenu_page(
+            null, // Hidden — no parent menu
+            __( 'Setup Wizard', 'autocomplete-google-address' ),
+            '',
+            'manage_options',
+            'aga-wizard',
+            array( $this, 'render_page' )
+        );
+
+        // Also register under the CPT menu for the "Run Setup Wizard" link in settings.
         add_submenu_page(
             'edit.php?post_type=aga_form',
             __( 'Setup Wizard', 'autocomplete-google-address' ),
