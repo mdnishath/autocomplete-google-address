@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google, maps, places, autocomplete, address, form, woocommerce, contact form 7, wpforms, gravity forms, elementor, checkout, address autocomplete
 Requires at least: 5.4
 Tested up to: 6.9
-Stable tag: 5.1.0
+Stable tag: 5.1.1
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -219,6 +219,11 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 8. Form Presets — One-click setup for popular form plugins
 
 == Changelog ==
+
+= 5.1.1 =
+* FIX: Setup wizard "Sorry, you are not allowed to access this page" error on fresh activation.
+* FIX: Wizard page now registers as standalone hidden page, accessible regardless of CPT timing.
+* FIX: Added capability check and redirect loop guard for wizard.
 
 = 5.1.0 =
 * NEW: Address Validation with verified/warning/invalid badges (Pro).

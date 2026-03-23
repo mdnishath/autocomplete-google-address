@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://wordpress.org/plugins/autocomplete-google-address/"><img src="https://img.shields.io/badge/version-5.1.0-blue?style=for-the-badge&logo=wordpress&logoColor=white" alt="Version 5.1.0"></a>
+  <a href="https://wordpress.org/plugins/autocomplete-google-address/"><img src="https://img.shields.io/badge/version-5.1.1-blue?style=for-the-badge&logo=wordpress&logoColor=white" alt="Version 5.1.1"></a>
   <a href="https://wordpress.org/plugins/autocomplete-google-address/"><img src="https://img.shields.io/badge/WordPress-6.0%2B-21759B?style=for-the-badge&logo=wordpress&logoColor=white" alt="WordPress 6.0+"></a>
   <a href="https://www.php.net/"><img src="https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 7.4+"></a>
   <a href="https://www.gnu.org/licenses/gpl-2.0.html"><img src="https://img.shields.io/badge/license-GPL--2.0--or--later-green?style=for-the-badge" alt="License GPL-2.0-or-later"></a>
@@ -191,7 +191,13 @@ Use the `[aga_autocomplete]` shortcode to embed an autocomplete field anywhere:
 
 ## 📋 Changelog
 
-### v5.1.0 — Latest Release
+### v5.1.1 — Bug Fix (Latest)
+
+- 🐛 **Fix:** Setup wizard "Sorry, you are not allowed to access this page" error on fresh activation
+- 🐛 **Fix:** Wizard page now registers as standalone hidden page, accessible regardless of CPT timing
+- 🐛 **Fix:** Added capability check and redirect loop guard for wizard
+
+### v5.1.0 — Major Feature Update
 
 <details>
 <summary><strong>Click to expand changelog</strong></summary>
