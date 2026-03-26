@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google, maps, places, autocomplete, address, form, woocommerce, contact form 7, wpforms, gravity forms, elementor, checkout, address autocomplete
 Requires at least: 5.4
 Tested up to: 6.9
-Stable tag: 5.1.1
+Stable tag: 5.1.2
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -219,6 +219,11 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 8. Form Presets — One-click setup for popular form plugins
 
 == Changelog ==
+
+= 5.1.2 =
+* FIX: Settings toggle not saving — unchecking a toggle (e.g., "Do not load Google Maps JS API") now properly saves as OFF.
+* FIX: "pointer is not a function" JavaScript error on settings page caused by missing wp-pointer dependency.
+* FIX: Added active tab tracking so saving on one tab doesn't reset toggles on other tabs.
 
 = 5.1.1 =
 * FIX: Setup wizard "Sorry, you are not allowed to access this page" error on fresh activation.
