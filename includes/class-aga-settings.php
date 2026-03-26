@@ -74,19 +74,20 @@ class AGA_Settings {
             // If empty, keep existing key (already in $new_input from $options).
         }
 
-        // Checkbox/toggle fields — update if present in input.
-        if ( isset( $input['do_not_load_gmaps_api'] ) ) {
-            $new_input['do_not_load_gmaps_api'] = absint( $input['do_not_load_gmaps_api'] );
-        } elseif ( array_key_exists( 'do_not_load_gmaps_api', $input ) ) {
-            $new_input['do_not_load_gmaps_api'] = 0;
+        // Toggle/checkbox fields — when unchecked, browsers don't send any value.
+        // We use a hidden _aga_tab field to know which tab submitted, so we only
+        // reset checkboxes for the active tab (not clobber other tabs).
+        $active_tab = isset( $input['_aga_tab'] ) ? sanitize_text_field( $input['_aga_tab'] ) : '';
+        unset( $new_input['_aga_tab'] ); // Don't persist the tab tracker.
+
+        // Advanced tab toggles.
+        if ( 'advanced' === $active_tab || empty( $active_tab ) ) {
+            $new_input['do_not_load_gmaps_api'] = ! empty( $input['do_not_load_gmaps_api'] ) ? 1 : 0;
         }
 
-        // WooCommerce settings.
-        if ( array_key_exists( 'woocommerce_enabled', $input ) ) {
-            $new_input['woocommerce_enabled'] = isset( $input['woocommerce_enabled'] ) ? absint( $input['woocommerce_enabled'] ) : 0;
-        }
-        if ( array_key_exists( 'woocommerce_block_checkout', $input ) ) {
-            $new_input['woocommerce_block_checkout'] = isset( $input['woocommerce_block_checkout'] ) ? absint( $input['woocommerce_block_checkout'] ) : 0;
+        // WooCommerce tab toggles.
+        if ( 'woocommerce' === $active_tab || empty( $active_tab ) ) {
+            $new_input['woocommerce_enabled'] = ! empty( $input['woocommerce_enabled'] ) ? 1 : 0;
         }
 
         // Appearance settings.

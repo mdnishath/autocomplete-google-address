@@ -26,6 +26,7 @@ if ( ! empty( $current_api_key ) ) {
 
 	<form method="post" action="options.php">
 		<?php settings_fields( 'Nish_aga_settings_group' ); ?>
+		<input type="hidden" name="Nish_aga_settings[_aga_tab]" id="aga-active-tab" value="general">
 
 		<!-- Tab Navigation -->
 		<nav class="aga-tabs">

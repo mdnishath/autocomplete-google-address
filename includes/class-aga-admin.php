@@ -95,6 +95,8 @@ class AGA_Admin {
         }
 
 		wp_enqueue_script( 'select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js', array( 'jquery' ), null, true );
+		wp_enqueue_style( 'wp-pointer' );
+		wp_enqueue_script( 'wp-pointer' );
 		wp_enqueue_script( $this->plugin_name, AGA_PLUGIN_URL . 'admin/js/admin.js', array( 'jquery', 'select2' ), filemtime( AGA_PLUGIN_DIR . 'admin/js/admin.js' ), true );
 
         $settings = get_option( 'Nish_aga_settings' );

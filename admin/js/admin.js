@@ -31,6 +31,8 @@
             $(this).addClass('active');
             $('.aga-tab-panel').removeClass('active');
             $('.aga-tab-panel[data-tab="' + target + '"]').addClass('active');
+            // Track active tab so sanitize knows which checkboxes to reset.
+            $('#aga-active-tab').val(target);
         });
 
         // ---- Preset Auto-Fill ----
