@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google, maps, places, autocomplete, address, form, woocommerce, contact form 7, wpforms, gravity forms, elementor, checkout, address autocomplete
 Requires at least: 5.4
 Tested up to: 6.9
-Stable tag: 5.1.2
+Stable tag: 5.2.0
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -219,6 +219,38 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 8. Form Presets — One-click setup for popular form plugins
 
 == Changelog ==
+
+= 5.2.0 =
+* NEW: Map Picker — interactive map below address input. Users can click or drag the pin to pick an address. Replaces the old Map Preview with a unified, always-visible map experience (Pro).
+* NEW: Map centers on restricted country automatically when country restriction is set.
+* NEW: PO Box / APO / Military address detection with visual warning banner.
+* NEW: Fluent Forms integration with preset selectors.
+* NEW: Ninja Forms integration with preset selectors.
+* NEW: Setup Wizard now shows WooCommerce feature configuration step — toggle Map Picker, Address Validation, Geolocation, Saved Addresses, plus set Country Restriction, Place Types, and Language with a live preview.
+* NEW: WooCommerce auto-detect in Setup Wizard — detects block vs classic checkout and pre-selects WooCommerce.
+* NEW: Setup Wizard creates visible form config posts for WooCommerce (billing + shipping) so users can see and edit their configs.
+* NEW: Setup Wizard is now a visible menu item under the Autocomplete menu.
+* NEW: Address Verification Webhook — send notifications to Slack, Zapier, or any URL when invalid/suspicious addresses are submitted (Pro).
+* NEW: White Label Mode — hide plugin branding and set a custom admin menu name. Ideal for agencies (Pro).
+* NEW: Checkout Abandonment Tracking — track when users type an address but leave without completing the form. Events appear in Analytics (Pro).
+* NEW: REST API endpoints — /wp-json/aga/v1/config and /wp-json/aga/v1/validate for headless/React storefronts (Pro).
+* NEW: Address Validation and Saved Addresses now available in Elementor Widget and Elementor Form Field.
+* NEW: Geolocation now available in Elementor Form Field.
+* NEW: Dark mode support — autocomplete dropdown, badges, and warnings adapt to prefers-color-scheme: dark.
+* NEW: RTL language support for Arabic, Hebrew, and other right-to-left languages.
+* NEW: Loading skeleton animation while fetching suggestions.
+* NEW: ARIA accessibility — listbox, combobox, option roles, aria-expanded, aria-selected for screen readers.
+* FIX: iOS/Safari — dropdown items now respond to touch events reliably. Added touchend handlers, tap highlight, and smooth scrolling.
+* FIX: iOS — native autocomplete no longer overlaps custom dropdown (autocomplete="aga-none" workaround).
+* FIX: Race condition — rapidly selecting multiple addresses no longer applies stale results.
+* FIX: Stale API responses discarded when user types faster than the API responds.
+* FIX: Autocomplete dropdown no longer reappears after dragging the map pin.
+* FIX: Null safety for config.formats preventing JS errors on some form types.
+* FIX: Google Maps API polling loop now times out after 20 seconds instead of running forever.
+* FIX: Added ABSPATH protection to 6 PHP files that were missing it.
+* PERF: Combined 2 database queries into 1 for frontend form loading.
+* PERF: Health check results cached in 5-minute transient.
+* PERF: Google Maps script loaded with loading=async parameter.
 
 = 5.1.2 =
 * FIX: Settings toggle not saving — unchecking a toggle (e.g., "Do not load Google Maps JS API") now properly saves as OFF.

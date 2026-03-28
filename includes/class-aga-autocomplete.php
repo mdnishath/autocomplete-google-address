@@ -77,14 +77,6 @@ class AGA_Autocomplete {
             }
         }
 
-        // Map preview (Pro feature)
-        $config['show_map_preview'] = false;
-        if ( $is_paying ) {
-            $show_map = get_post_meta( $form_id, 'Nish_aga_show_map_preview', true );
-            $config['show_map_preview'] = ( '1' === $show_map );
-            $config['map_container_selector'] = get_post_meta( $form_id, 'Nish_aga_map_container_selector', true );
-        }
-
         // Geolocation auto-detect (Pro feature)
         $config['geolocation'] = false;
         if ( $is_paying ) {
@@ -104,6 +96,13 @@ class AGA_Autocomplete {
         if ( $is_paying ) {
             $saved_addresses = get_post_meta( $form_id, 'Nish_aga_saved_addresses', true );
             $config['saved_addresses'] = ( '1' === $saved_addresses );
+        }
+
+        // Map Picker (Pro feature)
+        $config['map_picker'] = false;
+        if ( $is_paying ) {
+            $map_picker = get_post_meta( $form_id, 'Nish_aga_map_picker', true );
+            $config['map_picker'] = ( '1' === $map_picker );
         }
 
         // Clean up empty selectors

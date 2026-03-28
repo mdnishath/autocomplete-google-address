@@ -4,7 +4,7 @@
  * Plugin Name: Autocomplete Google Address (Premium)
  * Plugin URI:        https://wordpress.org/plugins/autocomplete-google-address/
  * Description:       Add Google Places address autocomplete to any existing form in WordPress using a selector-based mapping builder.
- * Version:           5.1.2
+ * Version:           5.2.0
  * Author:            Md Nishath Khandakar
  * Author URI:        https://profiles.wordpress.org/nishatbd31/
  * License:           GPL-2.0-or-later
@@ -28,7 +28,8 @@ if ( !function_exists( 'google_autocomplete' ) ) {
                 'slug'             => 'form-autocomplete-nish',
                 'type'             => 'plugin',
                 'public_key'       => 'pk_f939b69fc6977108e74fa9e7e3136',
-                'is_premium'       => false,
+                'is_premium'       => true,
+                'is_premium_only'  => false,
                 'has_addons'       => false,
                 'has_paid_plans'   => true,
                 'trial'            => array(
@@ -56,7 +57,7 @@ if ( !function_exists( 'google_autocomplete' ) ) {
 /**
  * Currently plugin version.
  */
-define( 'AGA_VERSION', '5.1.2' );
+define( 'AGA_VERSION', '5.2.0' );
 /**
  * Plugin directory path.
  */

@@ -73,6 +73,60 @@ defined( 'ABSPATH' ) || exit;
 
                     <h3><?php esc_html_e( 'For Developers', 'autocomplete-google-address' ); ?></h3>
                     <p><?php esc_html_e( 'You can also use the PHP function aga_render_form_config( $id ) in your theme templates to load a configuration programmatically.', 'autocomplete-google-address' ); ?></p>
+
+                    <hr style="margin: 20px 0;" />
+
+                    <h2><?php esc_html_e( 'Pro Features Guide', 'autocomplete-google-address' ); ?></h2>
+
+                    <h3>🗺️ <?php esc_html_e( 'Map Picker', 'autocomplete-google-address' ); ?></h3>
+                    <p><?php esc_html_e( 'Shows an interactive Google Map below the address field. Users can click anywhere on the map or drag the pin to select a precise location. The address fields auto-fill via reverse geocoding. The map auto-centers on the restricted country.', 'autocomplete-google-address' ); ?></p>
+
+                    <h3>⚠️ <?php esc_html_e( 'PO Box Detection', 'autocomplete-google-address' ); ?></h3>
+                    <p><?php esc_html_e( 'Automatically detects PO Box, APO, FPO, DPO, and military addresses and shows a warning banner. Useful for stores that cannot ship to PO Boxes.', 'autocomplete-google-address' ); ?></p>
+
+                    <h3>🔔 <?php esc_html_e( 'Address Verification Webhook', 'autocomplete-google-address' ); ?></h3>
+                    <p><?php echo wp_kses_post( __( 'Go to <strong>Settings &raquo; General</strong> and enter a webhook URL (Slack, Zapier, or custom). The plugin sends a notification whenever an invalid or suspicious address is submitted.', 'autocomplete-google-address' ) ); ?></p>
+
+                    <h3>🏷️ <?php esc_html_e( 'White Label Mode', 'autocomplete-google-address' ); ?></h3>
+                    <p><?php echo wp_kses_post( __( 'Go to <strong>Settings &raquo; General</strong> and enable White Label Mode. Set a custom menu name to rebrand the plugin in the WordPress admin. Ideal for agencies building client sites.', 'autocomplete-google-address' ) ); ?></p>
+
+                    <h3>📊 <?php esc_html_e( 'Checkout Abandonment Tracking', 'autocomplete-google-address' ); ?></h3>
+                    <p><?php echo wp_kses_post( __( 'Enable in <strong>Settings &raquo; General</strong>. Tracks when users start typing an address but leave without completing the form. Events appear in the Analytics dashboard.', 'autocomplete-google-address' ) ); ?></p>
+
+                    <h3>🔌 <?php esc_html_e( 'REST API', 'autocomplete-google-address' ); ?></h3>
+                    <p><?php esc_html_e( 'For headless and React storefronts:', 'autocomplete-google-address' ); ?></p>
+                    <ul style="list-style: disc; padding-left: 20px;">
+                        <li><code>GET /wp-json/aga/v1/config</code> — <?php esc_html_e( 'Returns all active form configs and API key', 'autocomplete-google-address' ); ?></li>
+                        <li><code>POST /wp-json/aga/v1/validate</code> — <?php esc_html_e( 'Validates an address (requires authentication)', 'autocomplete-google-address' ); ?></li>
+                    </ul>
+
+                    <h3>🌙 <?php esc_html_e( 'Dark Mode & RTL', 'autocomplete-google-address' ); ?></h3>
+                    <p><?php esc_html_e( 'The autocomplete dropdown automatically adapts to dark mode (prefers-color-scheme: dark) and supports right-to-left languages like Arabic and Hebrew.', 'autocomplete-google-address' ); ?></p>
+
+                    <hr style="margin: 20px 0;" />
+
+                    <h2><?php esc_html_e( 'Supported Form Plugins', 'autocomplete-google-address' ); ?></h2>
+                    <ul style="list-style: disc; padding-left: 20px;">
+                        <li><strong>WooCommerce</strong> — <?php esc_html_e( 'Zero-config, auto-detects classic & block checkout', 'autocomplete-google-address' ); ?></li>
+                        <li><strong>Contact Form 7</strong></li>
+                        <li><strong>WPForms</strong></li>
+                        <li><strong>Gravity Forms</strong></li>
+                        <li><strong>Elementor Pro Forms</strong> — <?php esc_html_e( 'Native widget + form field', 'autocomplete-google-address' ); ?></li>
+                        <li><strong>Fluent Forms</strong> — <?php esc_html_e( 'New in v5.2.0', 'autocomplete-google-address' ); ?></li>
+                        <li><strong>Ninja Forms</strong> — <?php esc_html_e( 'New in v5.2.0', 'autocomplete-google-address' ); ?></li>
+                        <li><strong><?php esc_html_e( 'Any HTML form', 'autocomplete-google-address' ); ?></strong> — <?php esc_html_e( 'Via CSS selector mapping', 'autocomplete-google-address' ); ?></li>
+                    </ul>
+
+                    <hr style="margin: 20px 0;" />
+
+                    <h2><?php esc_html_e( 'Required Google APIs', 'autocomplete-google-address' ); ?></h2>
+                    <p><?php esc_html_e( 'Enable these in your Google Cloud Console:', 'autocomplete-google-address' ); ?></p>
+                    <ul style="list-style: disc; padding-left: 20px;">
+                        <li><strong>Places API (New)</strong> — <?php esc_html_e( 'Required for autocomplete', 'autocomplete-google-address' ); ?></li>
+                        <li><strong>Maps JavaScript API</strong> — <?php esc_html_e( 'Required for Map Picker', 'autocomplete-google-address' ); ?></li>
+                        <li><strong>Geocoding API</strong> — <?php esc_html_e( 'Required for Geolocation & Map Picker drag', 'autocomplete-google-address' ); ?></li>
+                        <li><strong>Address Validation API</strong> — <?php esc_html_e( 'Required for Address Validation badges', 'autocomplete-google-address' ); ?></li>
+                    </ul>
                 </div>
             </div>
         </div>

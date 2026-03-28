@@ -12,6 +12,8 @@
  * @subpackage Autocomplete_Google_Address/includes
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * The core plugin class.
  *
@@ -133,6 +135,7 @@ class AGA_Plugin {
 		require_once AGA_PLUGIN_DIR . 'includes/class-aga-frontend.php';
         require_once AGA_PLUGIN_DIR . 'includes/class-aga-shortcode.php';
         require_once AGA_PLUGIN_DIR . 'includes/class-aga-elementor.php';
+        require_once AGA_PLUGIN_DIR . 'includes/class-aga-rest-api.php';
 
         require_once AGA_PLUGIN_DIR . 'helpers/aga-helpers.php';
         require_once AGA_PLUGIN_DIR . 'helpers/aga-languages.php';
@@ -223,6 +226,7 @@ class AGA_Plugin {
         new AGA_Shortcode();
         new AGA_Elementor();
         new AGA_Saved_Addresses();
+        new AGA_REST_API();
 
         // Find globally active forms early.
         $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'load_automatic_forms' );

@@ -5,7 +5,8 @@ defined( 'ABSPATH' ) || exit;
  * Form plugin preset definitions.
  *
  * Provides ready-made selector templates for popular form plugins:
- * Contact Form 7, WPForms, Gravity Forms, and Elementor Pro Forms.
+ * Contact Form 7, WPForms, Gravity Forms, Elementor Pro Forms,
+ * Fluent Forms, and Ninja Forms.
  */
 class AGA_Presets {
 
@@ -62,6 +63,30 @@ class AGA_Presets {
 					'state'         => '#form-field-state',
 					'zip'           => '#form-field-zip',
 					'country'       => '#form-field-country',
+				),
+			),
+			'fluent_forms' => array(
+				'label'       => 'Fluent Forms',
+				'description' => 'Uses [name="field-name"] selectors. Replace with your Fluent Forms field names (check form builder for names).',
+				'selectors'   => array(
+					'main_selector' => '[name="address"]',
+					'street'        => '[name="address_line_1"]',
+					'city'          => '[name="city"]',
+					'state'         => '[name="state"]',
+					'zip'           => '[name="zip"]',
+					'country'       => '[name="country"]',
+				),
+			),
+			'ninja_forms' => array(
+				'label'       => 'Ninja Forms',
+				'description' => 'Uses #nf-field-FIELDID pattern. Replace FIELDID with your Ninja Forms field IDs (numeric).',
+				'selectors'   => array(
+					'main_selector' => '#nf-field-FIELDID',
+					'street'        => '#nf-field-FIELDID',
+					'city'          => '#nf-field-FIELDID',
+					'state'         => '#nf-field-FIELDID',
+					'zip'           => '#nf-field-FIELDID',
+					'country'       => '#nf-field-FIELDID',
 				),
 			),
 		);

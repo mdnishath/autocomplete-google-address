@@ -123,7 +123,28 @@ class AGA_Elementor_Form_Field extends \ElementorPro\Modules\Forms\Fields\Field_
 			) ),
 			'aga_show_map' => array_merge( $tab_args, array(
 				'name'      => 'aga_show_map',
-				'label'     => esc_html__( 'Show Map Preview', 'autocomplete-google-address' ),
+				'label'     => esc_html__( 'Map Picker', 'autocomplete-google-address' ),
+				'type'      => \Elementor\Controls_Manager::SWITCHER,
+				'default'   => '',
+				'condition' => $condition,
+			) ),
+			'aga_geolocation' => array_merge( $tab_args, array(
+				'name'      => 'aga_geolocation',
+				'label'     => esc_html__( 'Geolocation Auto-detect', 'autocomplete-google-address' ),
+				'type'      => \Elementor\Controls_Manager::SWITCHER,
+				'default'   => '',
+				'condition' => $condition,
+			) ),
+			'aga_address_validation' => array_merge( $tab_args, array(
+				'name'      => 'aga_address_validation',
+				'label'     => esc_html__( 'Address Validation', 'autocomplete-google-address' ),
+				'type'      => \Elementor\Controls_Manager::SWITCHER,
+				'default'   => '',
+				'condition' => $condition,
+			) ),
+			'aga_saved_addresses' => array_merge( $tab_args, array(
+				'name'      => 'aga_saved_addresses',
+				'label'     => esc_html__( 'Saved Addresses', 'autocomplete-google-address' ),
 				'type'      => \Elementor\Controls_Manager::SWITCHER,
 				'default'   => '',
 				'condition' => $condition,
@@ -170,8 +191,7 @@ class AGA_Elementor_Form_Field extends \ElementorPro\Modules\Forms\Fields\Field_
 			'formats'                => array( 'state' => 'long', 'country' => 'long' ),
 			'component_restrictions' => array(),
 			'place_types'            => '',
-			'show_map_preview'       => false,
-			'map_container_selector' => '',
+			'map_picker'             => false,
 			'geolocation'            => false,
 			'address_validation'     => false,
 			'saved_addresses'        => false,
@@ -185,7 +205,16 @@ class AGA_Elementor_Form_Field extends \ElementorPro\Modules\Forms\Fields\Field_
 			$config['place_types'] = $item['aga_place_types'];
 		}
 		if ( $is_paying && ! empty( $item['aga_show_map'] ) && 'yes' === $item['aga_show_map'] ) {
-			$config['show_map_preview'] = true;
+			$config['map_picker'] = true;
+		}
+		if ( $is_paying && ! empty( $item['aga_geolocation'] ) && 'yes' === $item['aga_geolocation'] ) {
+			$config['geolocation'] = true;
+		}
+		if ( $is_paying && ! empty( $item['aga_address_validation'] ) && 'yes' === $item['aga_address_validation'] ) {
+			$config['address_validation'] = true;
+		}
+		if ( $is_paying && ! empty( $item['aga_saved_addresses'] ) && 'yes' === $item['aga_saved_addresses'] ) {
+			$config['saved_addresses'] = true;
 		}
 
 		// Store config as a data attribute on the input — NO script tags.
@@ -194,7 +223,9 @@ class AGA_Elementor_Form_Field extends \ElementorPro\Modules\Forms\Fields\Field_
 		$form->add_render_attribute( 'input' . $item_index, 'autocomplete', 'off' );
 		$form->add_render_attribute( 'input' . $item_index, 'data-aga-config', wp_json_encode( $config ) );
 
+		echo '<div class="aga-elementor-field-wrapper" style="position:relative;width:100%;">';
 		echo '<input size="1" ' . $form->get_render_attribute_string( 'input' . $item_index ) . '>';
+		echo '</div>';
 
 		// Smart mapping: render sub-fields
 		if ( 'smart_mapping' === $mode && ! empty( $selected_fields ) ) {

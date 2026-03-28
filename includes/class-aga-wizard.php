@@ -52,11 +52,11 @@ class AGA_Wizard {
             array( $this, 'render_page' )
         );
 
-        // Also register under the CPT menu for the "Run Setup Wizard" link in settings.
+        // Visible submenu under the Autocomplete menu.
         add_submenu_page(
             'edit.php?post_type=aga_form',
             __( 'Setup Wizard', 'autocomplete-google-address' ),
-            '',
+            __( 'Setup Wizard', 'autocomplete-google-address' ),
             'manage_options',
             'aga-wizard',
             array( $this, 'render_page' )
@@ -81,7 +81,7 @@ class AGA_Wizard {
             wp_send_json_error( array( 'message' => __( 'API key is required.', 'autocomplete-google-address' ) ) );
         }
 
-        $allowed_types = array( 'woocommerce', 'cf7', 'wpforms', 'gravity', 'elementor', 'manual' );
+        $allowed_types = array( 'woocommerce', 'cf7', 'wpforms', 'gravity', 'elementor', 'fluent_forms', 'ninja_forms', 'manual' );
         if ( ! in_array( $form_type, $allowed_types, true ) ) {
             wp_send_json_error( array( 'message' => __( 'Invalid form type.', 'autocomplete-google-address' ) ) );
         }
@@ -93,10 +93,139 @@ class AGA_Wizard {
         $redirect_url = admin_url( 'edit.php?post_type=aga_form' );
 
         if ( 'woocommerce' === $form_type ) {
-            // Zero-config: just enable the WooCommerce setting.
-            // AGA_WooCommerce handles everything automatically (classic + block checkout).
             $settings['woocommerce_enabled'] = 1;
             update_option( 'Nish_aga_settings', $settings );
+
+            // Detect block vs classic checkout.
+            $is_block  = false;
+            $is_classic = true; // Assume classic by default.
+            $checkout_page_id = function_exists( 'wc_get_page_id' ) ? wc_get_page_id( 'checkout' ) : 0;
+            if ( $checkout_page_id > 0 ) {
+                $checkout_post = get_post( $checkout_page_id );
+                if ( $checkout_post && has_block( 'woocommerce/checkout', $checkout_post ) ) {
+                    $is_block   = true;
+                    $is_classic = false; // Block checkout replaces classic.
+                }
+            }
+
+            // Delete any existing WooCommerce form configs to prevent duplicates on re-run.
+            $existing_woo = get_posts( array(
+                'post_type'      => 'aga_form',
+                'posts_per_page' => -1,
+                'meta_key'       => 'Nish_aga_form_preset',
+                'meta_value'     => 'woocommerce',
+                'fields'         => 'ids',
+            ) );
+            foreach ( $existing_woo as $old_id ) {
+                wp_delete_post( $old_id, true );
+            }
+
+            // Build config sets based on detected checkout type.
+            $configs = array();
+
+            if ( $is_block ) {
+                $configs[] = array(
+                    'title'   => __( 'WooCommerce Billing (React Block Checkout)', 'autocomplete-google-address' ),
+                    'main'    => '#billing-address_1',
+                    'street'  => '#billing-address_1',
+                    'city'    => '#billing-city',
+                    'state'   => '#billing-state',
+                    'zip'     => '#billing-postcode',
+                    'country' => '#billing-country',
+                );
+                $configs[] = array(
+                    'title'   => __( 'WooCommerce Shipping (React Block Checkout)', 'autocomplete-google-address' ),
+                    'main'    => '#shipping-address_1',
+                    'street'  => '#shipping-address_1',
+                    'city'    => '#shipping-city',
+                    'state'   => '#shipping-state',
+                    'zip'     => '#shipping-postcode',
+                    'country' => '#shipping-country',
+                );
+            }
+
+            if ( $is_classic ) {
+                $configs[] = array(
+                    'title'   => __( 'WooCommerce Billing (Classic Checkout)', 'autocomplete-google-address' ),
+                    'main'    => '#billing_address_1',
+                    'street'  => '#billing_address_1',
+                    'city'    => '#billing_city',
+                    'state'   => '#billing_state',
+                    'zip'     => '#billing_postcode',
+                    'country' => '#billing_country',
+                );
+                $configs[] = array(
+                    'title'   => __( 'WooCommerce Shipping (Classic Checkout)', 'autocomplete-google-address' ),
+                    'main'    => '#shipping_address_1',
+                    'street'  => '#shipping_address_1',
+                    'city'    => '#shipping_city',
+                    'state'   => '#shipping_state',
+                    'zip'     => '#shipping_postcode',
+                    'country' => '#shipping_country',
+                );
+            }
+
+            $first_post_id = 0;
+            foreach ( $configs as $cfg ) {
+                $post_id = wp_insert_post( array(
+                    'post_title'  => $cfg['title'],
+                    'post_type'   => 'aga_form',
+                    'post_status' => 'publish',
+                ) );
+
+                if ( $post_id && ! is_wp_error( $post_id ) ) {
+                    update_post_meta( $post_id, 'Nish_aga_form_preset', 'woocommerce' );
+                    update_post_meta( $post_id, 'Nish_aga_mode', 'smart_mapping' );
+                    update_post_meta( $post_id, 'Nish_aga_main_selector', $cfg['main'] );
+                    update_post_meta( $post_id, 'Nish_aga_street_selector', $cfg['street'] );
+                    update_post_meta( $post_id, 'Nish_aga_city_selector', $cfg['city'] );
+                    update_post_meta( $post_id, 'Nish_aga_state_selector', $cfg['state'] );
+                    update_post_meta( $post_id, 'Nish_aga_zip_selector', $cfg['zip'] );
+                    update_post_meta( $post_id, 'Nish_aga_country_selector', $cfg['country'] );
+                    update_post_meta( $post_id, 'Nish_aga_state_format', 'short' );
+                    update_post_meta( $post_id, 'Nish_aga_country_format', 'short' );
+                    update_post_meta( $post_id, 'Nish_aga_activate_globally', '1' );
+
+                    // Pro feature toggles from wizard step 3.
+                    $address_validation = isset( $_POST['address_validation'] ) ? sanitize_text_field( wp_unslash( $_POST['address_validation'] ) ) : '0';
+                    $geolocation        = isset( $_POST['geolocation'] ) ? sanitize_text_field( wp_unslash( $_POST['geolocation'] ) ) : '0';
+                    $saved_addresses    = isset( $_POST['saved_addresses'] ) ? sanitize_text_field( wp_unslash( $_POST['saved_addresses'] ) ) : '0';
+                    $map_picker_val     = isset( $_POST['map_picker'] ) ? sanitize_text_field( wp_unslash( $_POST['map_picker'] ) ) : '0';
+                    $country_restrict   = isset( $_POST['country_restriction'] ) ? sanitize_text_field( wp_unslash( $_POST['country_restriction'] ) ) : '';
+                    $place_types        = isset( $_POST['place_types'] ) ? sanitize_text_field( wp_unslash( $_POST['place_types'] ) ) : '';
+                    $language           = isset( $_POST['language'] ) ? sanitize_text_field( wp_unslash( $_POST['language'] ) ) : '';
+
+                    if ( '1' === $address_validation ) {
+                        update_post_meta( $post_id, 'Nish_aga_address_validation', '1' );
+                    }
+                    if ( '1' === $geolocation ) {
+                        update_post_meta( $post_id, 'Nish_aga_geolocation', '1' );
+                    }
+                    if ( '1' === $saved_addresses ) {
+                        update_post_meta( $post_id, 'Nish_aga_saved_addresses', '1' );
+                    }
+                    if ( '1' === $map_picker_val ) {
+                        update_post_meta( $post_id, 'Nish_aga_map_picker', '1' );
+                    }
+                    if ( ! empty( $country_restrict ) ) {
+                        update_post_meta( $post_id, 'Nish_aga_country_restriction', $country_restrict );
+                    }
+                    if ( ! empty( $place_types ) ) {
+                        update_post_meta( $post_id, 'Nish_aga_place_types', $place_types );
+                    }
+                    if ( ! empty( $language ) ) {
+                        update_post_meta( $post_id, 'Nish_aga_language_override', $language );
+                    }
+
+                    if ( ! $first_post_id ) {
+                        $first_post_id = $post_id;
+                    }
+                }
+            }
+
+            $redirect_url = $first_post_id
+                ? admin_url( 'post.php?post=' . $first_post_id . '&action=edit' )
+                : admin_url( 'edit.php?post_type=aga_form' );
 
         } elseif ( 'manual' === $form_type ) {
             update_option( 'Nish_aga_settings', $settings );
@@ -110,7 +239,9 @@ class AGA_Wizard {
                 'cf7'       => 'Contact Form 7 Setup',
                 'wpforms'   => 'WPForms Setup',
                 'gravity'   => 'Gravity Forms Setup',
-                'elementor' => 'Elementor Forms Setup',
+                'elementor'     => 'Elementor Forms Setup',
+                'fluent_forms'  => 'Fluent Forms Setup',
+                'ninja_forms'   => 'Ninja Forms Setup',
             );
 
             $post_id = wp_insert_post( array(

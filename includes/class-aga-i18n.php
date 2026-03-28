@@ -12,6 +12,8 @@
  * @subpackage Autocomplete_Google_Address/includes
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Define the internationalization functionality.
  *

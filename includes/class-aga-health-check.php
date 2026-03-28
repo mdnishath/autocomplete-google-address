@@ -27,6 +27,12 @@ class AGA_Health_Check {
             wp_send_json_error( 'Unauthorized' );
         }
 
+        // Return cached results if available (5-minute TTL).
+        $cached = get_transient( 'aga_health_check_results' );
+        if ( $cached !== false ) {
+            wp_send_json_success( $cached );
+        }
+
         $results = array();
 
         $results[] = $this->check_api_key();
@@ -39,6 +45,8 @@ class AGA_Health_Check {
         $results[] = $this->check_php_version();
         $results[] = $this->check_wp_version();
         $results[] = $this->check_plugin_version();
+
+        set_transient( 'aga_health_check_results', $results, 5 * MINUTE_IN_SECONDS );
 
         wp_send_json_success( $results );
     }

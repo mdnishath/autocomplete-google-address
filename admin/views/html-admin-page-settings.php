@@ -73,17 +73,39 @@ if ( ! empty( $current_api_key ) ) {
 						</p>
 					</div>
 
-					<hr />
-
+					<!-- Address Verification Webhook -->
 					<div class="aga-field-group">
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=aga-wizard' ) ); ?>" class="button button-secondary">
-							<span class="dashicons dashicons-admin-settings aga-icon-inline"></span>
-							<?php esc_html_e( 'Run Setup Wizard', 'autocomplete-google-address' ); ?>
-						</a>
-						<p class="description">
-							<?php esc_html_e( 'Launch the guided setup wizard to configure the plugin step by step.', 'autocomplete-google-address' ); ?>
-						</p>
+						<label for="aga_webhook_url"><strong><?php esc_html_e( 'Address Verification Webhook', 'autocomplete-google-address' ); ?></strong></label>
+						<input type="url" id="aga_webhook_url" name="Nish_aga_settings[webhook_url]" value="<?php echo esc_attr( $options['webhook_url'] ?? '' ); ?>" class="widefat" placeholder="https://hooks.slack.com/... or https://your-site.com/webhook" />
+						<p class="description"><?php esc_html_e( 'Receive notifications when invalid or suspicious addresses are submitted. Works with Slack, Zapier, or any webhook URL.', 'autocomplete-google-address' ); ?></p>
 					</div>
+
+					<!-- White Label Mode -->
+					<div class="aga-field-group">
+						<label for="aga_white_label"><strong><?php esc_html_e( 'White Label Mode', 'autocomplete-google-address' ); ?></strong></label>
+						<label class="aga-switch">
+							<input type="checkbox" id="aga_white_label" name="Nish_aga_settings[white_label]" value="1" <?php checked( $options['white_label'] ?? '', '1' ); ?>>
+							<span class="aga-slider"></span>
+						</label>
+						<p class="description"><?php esc_html_e( 'Remove plugin branding from the WordPress admin menu. Ideal for agencies and developers.', 'autocomplete-google-address' ); ?></p>
+					</div>
+
+					<div class="aga-field-group" id="aga-white-label-name" style="display:none;">
+						<label for="aga_white_label_name"><strong><?php esc_html_e( 'Custom Menu Name', 'autocomplete-google-address' ); ?></strong></label>
+						<input type="text" id="aga_white_label_name" name="Nish_aga_settings[white_label_name]" value="<?php echo esc_attr( $options['white_label_name'] ?? '' ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'e.g. Address Autocomplete', 'autocomplete-google-address' ); ?>" />
+						<p class="description"><?php esc_html_e( 'Custom name shown in WordPress admin menu when white label is enabled.', 'autocomplete-google-address' ); ?></p>
+					</div>
+
+					<!-- Checkout Abandonment Tracking -->
+					<div class="aga-field-group">
+						<label for="aga_track_abandonment"><strong><?php esc_html_e( 'Checkout Abandonment Tracking', 'autocomplete-google-address' ); ?></strong></label>
+						<label class="aga-switch">
+							<input type="checkbox" id="aga_track_abandonment" name="Nish_aga_settings[track_abandonment]" value="1" <?php checked( $options['track_abandonment'] ?? '', '1' ); ?>>
+							<span class="aga-slider"></span>
+						</label>
+						<p class="description"><?php esc_html_e( 'Track when users start typing an address but leave the page without completing the form. Events appear in Analytics.', 'autocomplete-google-address' ); ?></p>
+					</div>
+
 				</div>
 			</div>
 		</div>
@@ -404,6 +426,17 @@ if ( ! empty( $current_api_key ) ) {
 
 		updatePreview();
 		updateAttribution();
+
+		// White Label toggle: show/hide custom name field.
+		var whiteLabel = document.getElementById('aga_white_label');
+		var whiteLabelName = document.getElementById('aga-white-label-name');
+		if (whiteLabel && whiteLabelName) {
+			function toggleWhiteLabelName() {
+				whiteLabelName.style.display = whiteLabel.checked ? '' : 'none';
+			}
+			toggleWhiteLabelName();
+			whiteLabel.addEventListener('change', toggleWhiteLabelName);
+		}
 	});
 })();
 </script>

@@ -21,11 +21,11 @@ $country_restriction = get_post_meta( $post->ID, 'Nish_aga_country_restriction',
 $place_types         = get_post_meta( $post->ID, 'Nish_aga_place_types', true );
 $language_override = get_post_meta( $post->ID, 'Nish_aga_language_override', true );
 $form_preset       = get_post_meta( $post->ID, 'Nish_aga_form_preset', true );
-$show_map_preview  = get_post_meta( $post->ID, 'Nish_aga_show_map_preview', true );
 $map_container_sel = get_post_meta( $post->ID, 'Nish_aga_map_container_selector', true );
 $address_validation = get_post_meta( $post->ID, 'Nish_aga_address_validation', true );
 $geolocation       = get_post_meta( $post->ID, 'Nish_aga_geolocation', true );
 $saved_addresses   = get_post_meta( $post->ID, 'Nish_aga_saved_addresses', true );
+$map_picker        = get_post_meta( $post->ID, 'Nish_aga_map_picker', true );
 
 // Single Line
 $lat_selector      = get_post_meta( $post->ID, 'Nish_aga_lat_selector', true );
@@ -202,7 +202,7 @@ function aga_pro_label( $checkout_url, $is_paying ) {
 					<div id="aga-live-preview-container">
 						<input type="text" id="aga-live-preview-input" class="widefat" placeholder="<?php esc_attr_e( 'Start typing an address...', 'autocomplete-google-address' ); ?>" autocomplete="off" />
 					</div>
-					<div id="aga-preview-result" class="aga-mt-sm" style="display: none;">
+						<div id="aga-preview-result" class="aga-mt-sm" style="display: none;">
 						<table class="widefat striped" id="aga-preview-result-table">
 							<tbody></tbody>
 						</table>
@@ -332,11 +332,11 @@ function aga_pro_label( $checkout_url, $is_paying ) {
 						</div>
 						<div class="aga-toggle-row">
 							<div class="aga-toggle-row-info">
-								<strong><?php esc_html_e( 'Map Preview', 'autocomplete-google-address' ); ?></strong>
-								<span class="aga-toggle-desc"><?php esc_html_e( 'Show map after selection', 'autocomplete-google-address' ); ?></span>
+								<strong><?php esc_html_e( 'Map Picker', 'autocomplete-google-address' ); ?></strong>
+								<span class="aga-toggle-desc"><?php esc_html_e( 'Pick address from map by clicking or dragging', 'autocomplete-google-address' ); ?></span>
 							</div>
 							<label class="aga-switch">
-								<input type="checkbox" name="Nish_aga_show_map_preview" value="1" <?php checked( $show_map_preview, '1' ); ?> <?php echo ! $is_paying ? 'disabled' : ''; ?>>
+								<input type="checkbox" name="Nish_aga_map_picker" value="1" <?php checked( $map_picker, '1' ); ?> <?php echo ! $is_paying ? 'disabled' : ''; ?>>
 								<span class="aga-slider"></span>
 							</label>
 						</div>

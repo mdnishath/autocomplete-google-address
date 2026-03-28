@@ -108,6 +108,26 @@ class AGA_Validation {
             $valid   = false;
         }
 
+        // Fire webhook for invalid or warning addresses.
+        if ( 'invalid' === $level || 'warning' === $level ) {
+            $webhook_url = aga_get_setting( 'webhook_url' );
+            if ( ! empty( $webhook_url ) ) {
+                wp_remote_post( $webhook_url, array(
+                    'headers' => array( 'Content-Type' => 'application/json' ),
+                    'body'    => wp_json_encode( array(
+                        'event'   => 'address_validation',
+                        'level'   => $level,
+                        'address' => $address,
+                        'message' => $message,
+                        'site'    => get_site_url(),
+                        'time'    => current_time( 'mysql' ),
+                    ) ),
+                    'timeout'  => 5,
+                    'blocking' => false,
+                ) );
+            }
+        }
+
         wp_send_json_success( array(
             'valid'   => $valid,
             'level'   => $level,

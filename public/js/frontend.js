@@ -46,6 +46,8 @@
     };
 
     var aga = {
+        _selectionId: 0,
+
         init: function () {
             if (typeof window.aga_form_configs === 'undefined' || window.aga_form_configs.length === 0) {
                 return;
@@ -56,11 +58,17 @@
                 console.info('Autocomplete Google Address: Google Maps API detected from another source. Using existing instance.');
             }
 
+            var checkAttempts = 0;
+            var maxAttempts = 200; // 20 seconds max
             var checkGoogle = setInterval(function () {
+                checkAttempts++;
+                if (checkAttempts > maxAttempts) {
+                    clearInterval(checkGoogle);
+                    console.warn('Autocomplete Google Address: Google Maps API did not load within 20 seconds.');
+                    return;
+                }
                 if (typeof window.google !== 'undefined' && typeof window.google.maps !== 'undefined') {
                     clearInterval(checkGoogle);
-                    // importLibrary is only available with v=weekly. If another plugin loaded
-                    // the Maps API without v=weekly, fall back to checking if places is ready.
                     if (typeof google.maps.importLibrary === 'function') {
                         google.maps.importLibrary('places').then(function () {
                             aga.run();
@@ -68,13 +76,14 @@
                     } else if (typeof google.maps.places !== 'undefined') {
                         aga.run();
                     } else {
-                        // Wait for places library to load (old-style loading).
                         var checkPlaces = setInterval(function () {
                             if (typeof google.maps.places !== 'undefined') {
                                 clearInterval(checkPlaces);
                                 aga.run();
                             }
                         }, 100);
+                        // Timeout for places check too
+                        setTimeout(function () { clearInterval(checkPlaces); }, 10000);
                     }
                 }
             }, 100);
@@ -111,6 +120,8 @@
             var dropdown = document.createElement('ul');
             dropdown.className = 'aga-autocomplete-dropdown';
             dropdown.style.display = 'none';
+            dropdown.setAttribute('role', 'listbox');
+            dropdown.setAttribute('aria-label', 'Address suggestions');
             wrapper.appendChild(dropdown);
 
             var state = {
@@ -122,10 +133,18 @@
                 legacyService: aga.useNewAPI ? null : new google.maps.places.AutocompleteService()
             };
 
-            mainInput.setAttribute('autocomplete', 'off');
+            // iOS Safari ignores autocomplete="off", use a non-standard value to suppress native suggestions
+            mainInput.setAttribute('autocomplete', 'aga-none');
+            mainInput.setAttribute('autocorrect', 'off');
+            mainInput.setAttribute('spellcheck', 'false');
+            mainInput.setAttribute('role', 'combobox');
+            mainInput.setAttribute('aria-autocomplete', 'list');
+            mainInput.setAttribute('aria-expanded', 'false');
+            mainInput.setAttribute('aria-haspopup', 'listbox');
 
             mainInput.addEventListener('input', function () {
                 if (state.isSelecting) return;
+                if (mainInput.getAttribute('data-aga-suppress')) return;
 
                 var query = mainInput.value.trim();
 
@@ -164,12 +183,15 @@
                 }
             });
 
-            document.addEventListener('click', function (e) {
+            // Close dropdown on outside click/touch (iOS needs touchstart)
+            function closeOnOutside(e) {
                 if (!wrapper.contains(e.target)) {
                     aga.hideDropdown(dropdown);
                     state.activeIndex = -1;
                 }
-            });
+            }
+            document.addEventListener('click', closeOnOutside);
+            document.addEventListener('touchstart', closeOnOutside, { passive: true });
 
             // Saved Addresses focus handler (Pro feature)
             if (config.saved_addresses && aga_frontend_data.is_logged_in) {
@@ -179,6 +201,43 @@
             // Geolocation button (Pro feature)
             if (config.geolocation) {
                 aga.setupGeolocationButton(mainInput, wrapper, config);
+            }
+
+            // Map Picker button (Pro feature)
+            if (config.map_picker) {
+                aga.setupMapPickerButton(mainInput, wrapper, config, state);
+            }
+
+            // Checkout abandonment tracking
+            if (typeof aga_frontend_data !== 'undefined' && aga_frontend_data.track_abandonment) {
+                var addressEntered = false;
+                state.formSubmitted = false;
+
+                mainInput.addEventListener('change', function () {
+                    if (mainInput.value.trim().length > 5) {
+                        addressEntered = true;
+                    }
+                });
+
+                window.addEventListener('beforeunload', function () {
+                    if (addressEntered && !state.formSubmitted) {
+                        if (navigator.sendBeacon) {
+                            var data = new FormData();
+                            data.append('action', 'aga_track_event');
+                            data.append('nonce', aga_frontend_data.nonce);
+                            data.append('event_type', 'abandonment');
+                            data.append('form_id', config.form_id || '');
+                            navigator.sendBeacon(aga_frontend_data.ajax_url, data);
+                        }
+                    }
+                });
+
+                var form = mainInput.closest('form');
+                if (form) {
+                    form.addEventListener('submit', function () {
+                        state.formSubmitted = true;
+                    });
+                }
             }
         },
 
@@ -222,9 +281,9 @@
                         // Use existing reverseGeocode method
                         aga.reverseGeocode(latLng, mainInput, config);
 
-                        // Show map preview if enabled
-                        if (config.show_map_preview) {
-                            aga.showMapPreview(mainInput, latLng, config);
+                        // Center map picker if enabled
+                        if (config.map_picker) {
+                            aga.centerMapPicker(latLng, config);
                         }
 
                         // Remove loading state
@@ -273,8 +332,156 @@
             }, 3000);
         },
 
+        setupMapPickerButton: function (mainInput, wrapper, config, state) {
+            // Look for an existing map container (rendered by shortcode/Elementor/widget)
+            // Search up to 3 levels of parents to find it
+            var mapContainer = null;
+            var searchParent = wrapper.parentNode;
+            for (var i = 0; i < 3 && searchParent && !mapContainer; i++) {
+                mapContainer = searchParent.querySelector('.aga-map-picker-container');
+                searchParent = searchParent.parentNode;
+            }
+
+            if (!mapContainer) {
+                // Create one dynamically for standard forms (WooCommerce, CF7, etc.)
+                mapContainer = document.createElement('div');
+                mapContainer.className = 'aga-map-picker-container';
+                // Insert after the wrapper (address input container)
+                if (wrapper.nextSibling) {
+                    wrapper.parentNode.insertBefore(mapContainer, wrapper.nextSibling);
+                } else {
+                    wrapper.parentNode.appendChild(mapContainer);
+                }
+            }
+
+            var pickerMap = null;
+            var pickerMarker = null;
+
+            // Store references on config so selectPlace can update the map
+            config._mapPicker = {
+                getMap: function () { return pickerMap; },
+                getMarker: function () { return pickerMarker; },
+                centerOn: function (latLng) {
+                    if (pickerMap) {
+                        pickerMap.setCenter(latLng);
+                        pickerMap.setZoom(16);
+                    }
+                    if (pickerMarker) {
+                        pickerMarker.position = latLng;
+                    }
+                }
+            };
+
+            // Country center coordinates for restricted countries
+            var countryCenters = {
+                US: { lat: 39.8283, lng: -98.5795, zoom: 4 },
+                GB: { lat: 51.5074, lng: -0.1278, zoom: 6 },
+                UK: { lat: 51.5074, lng: -0.1278, zoom: 6 },
+                CA: { lat: 56.1304, lng: -106.3468, zoom: 4 },
+                AU: { lat: -25.2744, lng: 133.7751, zoom: 4 },
+                DE: { lat: 51.1657, lng: 10.4515, zoom: 6 },
+                FR: { lat: 46.2276, lng: 2.2137, zoom: 6 },
+                IN: { lat: 20.5937, lng: 78.9629, zoom: 5 },
+                BR: { lat: -14.2350, lng: -51.9253, zoom: 4 },
+                JP: { lat: 36.2048, lng: 138.2529, zoom: 5 },
+                CN: { lat: 35.8617, lng: 104.1954, zoom: 4 },
+                MX: { lat: 23.6345, lng: -102.5528, zoom: 5 },
+                IT: { lat: 41.8719, lng: 12.5674, zoom: 6 },
+                ES: { lat: 40.4637, lng: -3.7492, zoom: 6 },
+                NL: { lat: 52.1326, lng: 5.2913, zoom: 7 },
+                BD: { lat: 23.685, lng: 90.3563, zoom: 7 },
+                PK: { lat: 30.3753, lng: 69.3451, zoom: 5 },
+                NZ: { lat: -40.9006, lng: 174.886, zoom: 5 },
+                AE: { lat: 23.4241, lng: 53.8478, zoom: 7 },
+                SA: { lat: 23.8859, lng: 45.0792, zoom: 5 },
+                SG: { lat: 1.3521, lng: 103.8198, zoom: 11 },
+                ZA: { lat: -30.5595, lng: 22.9375, zoom: 5 },
+                IE: { lat: 53.1424, lng: -7.6921, zoom: 7 },
+                SE: { lat: 60.1282, lng: 18.6435, zoom: 5 },
+                NO: { lat: 60.472, lng: 8.4689, zoom: 5 },
+                DK: { lat: 56.2639, lng: 9.5018, zoom: 7 },
+                FI: { lat: 61.9241, lng: 25.7482, zoom: 5 },
+                PL: { lat: 51.9194, lng: 19.1451, zoom: 6 },
+                AT: { lat: 47.5162, lng: 14.5501, zoom: 7 },
+                CH: { lat: 46.8182, lng: 8.2275, zoom: 8 },
+                BE: { lat: 50.5039, lng: 4.4699, zoom: 8 },
+                PT: { lat: 39.3999, lng: -8.2245, zoom: 6 },
+                PH: { lat: 12.8797, lng: 121.774, zoom: 6 },
+                TH: { lat: 15.87, lng: 100.9925, zoom: 6 },
+                MY: { lat: 4.2105, lng: 101.9758, zoom: 6 },
+                KR: { lat: 35.9078, lng: 127.7669, zoom: 7 },
+                TR: { lat: 38.9637, lng: 35.2433, zoom: 6 },
+                EG: { lat: 26.8206, lng: 30.8025, zoom: 6 },
+                NG: { lat: 9.082, lng: 8.6753, zoom: 6 },
+                KE: { lat: -0.0236, lng: 37.9062, zoom: 6 },
+                GH: { lat: 7.9465, lng: -1.0232, zoom: 7 },
+                AR: { lat: -38.4161, lng: -63.6167, zoom: 4 },
+                CL: { lat: -35.6751, lng: -71.543, zoom: 4 },
+                CO: { lat: 4.5709, lng: -74.2973, zoom: 5 },
+            };
+
+            // Determine initial center from country restriction
+            var center = { lat: 20, lng: 0 }; // World center fallback
+            var initZoom = 2;
+
+            if (config.component_restrictions && config.component_restrictions.country) {
+                var restricted = config.component_restrictions.country;
+                var code = Array.isArray(restricted) ? restricted[0] : restricted;
+                code = (code || '').toUpperCase();
+                if (countryCenters[code]) {
+                    center = { lat: countryCenters[code].lat, lng: countryCenters[code].lng };
+                    initZoom = countryCenters[code].zoom;
+                }
+            }
+
+            // Initialize map immediately
+            function initMap() {
+                pickerMap = new google.maps.Map(mapContainer, {
+                    center: center,
+                    zoom: initZoom,
+                    disableDefaultUI: true,
+                    zoomControl: true,
+                    streetViewControl: false,
+                    mapId: 'aga_map_picker_' + config.form_id,
+                });
+
+                google.maps.importLibrary('marker').then(function (markerLib) {
+                    pickerMarker = new markerLib.AdvancedMarkerElement({
+                        map: pickerMap,
+                        position: center,
+                        gmpDraggable: true,
+                    });
+
+                    // Drag marker to pick address
+                    pickerMarker.addListener('dragend', function () {
+                        var pos = pickerMarker.position;
+                        var latLng = { lat: pos.lat, lng: pos.lng };
+                        pickerMap.setCenter(latLng);
+                        state.isSelecting = true;
+                        aga.reverseGeocode(latLng, mainInput, config);
+                        setTimeout(function () { state.isSelecting = false; }, 500);
+                    });
+
+                    // Click on map to move marker
+                    pickerMap.addListener('click', function (ev) {
+                        var latLng = { lat: ev.latLng.lat(), lng: ev.latLng.lng() };
+                        pickerMarker.position = latLng;
+                        pickerMap.setCenter(latLng);
+                        state.isSelecting = true;
+                        aga.reverseGeocode(latLng, mainInput, config);
+                        setTimeout(function () { state.isSelecting = false; }, 500);
+                    });
+                });
+            }
+
+            // Initialize right away
+            initMap();
+        },
+
         fetchSuggestions: function (query, config, state, dropdown, mainInput) {
             state.isFetching = true;
+            state.fetchId = (state.fetchId || 0) + 1;
+            var currentFetchId = state.fetchId;
             aga.showLoading(dropdown, mainInput);
 
             if (aga.useNewAPI) {
@@ -305,6 +512,7 @@
                 google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
                     .then(function (result) {
                         state.isFetching = false;
+                        if (state.fetchId !== currentFetchId) return; // stale fetch, discard
                         var suggestions = result.suggestions || [];
                         if (suggestions.length) {
                             aga.renderDropdown(suggestions, dropdown, mainInput, config, state);
@@ -332,6 +540,7 @@
 
                 state.legacyService.getPlacePredictions(legacyRequest, function (predictions, status) {
                     state.isFetching = false;
+                    if (state.fetchId !== currentFetchId) return; // stale fetch, discard
                     if (status === google.maps.places.PlacesServiceStatus.OK && predictions && predictions.length) {
                         // Wrap legacy predictions to match new API shape
                         var suggestions = predictions.map(function (p) {
@@ -399,17 +608,25 @@
 
                 var li = document.createElement('li');
                 li.className = 'aga-autocomplete-item';
+                li.setAttribute('role', 'option');
                 li.textContent = prediction.text.toString();
+                // iOS Safari fix: cursor pointer enables click events on dynamically created elements
+                li.style.cursor = 'pointer';
 
                 li.addEventListener('mouseenter', function () {
                     var items = dropdown.querySelectorAll('.aga-autocomplete-item');
                     aga.highlightItem(items, index);
                 });
 
-                li.addEventListener('click', function () {
+                // Use both click and touchend for iOS compatibility
+                var selectHandler = function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     aga.selectPlace(prediction, mainInput, config, state);
                     aga.hideDropdown(dropdown);
-                });
+                };
+                li.addEventListener('click', selectHandler);
+                li.addEventListener('touchend', selectHandler);
 
                 dropdown.appendChild(li);
             });
@@ -426,10 +643,12 @@
 
             aga.positionDropdown(dropdown, mainInput);
             dropdown.style.display = 'block';
+            mainInput.setAttribute('aria-expanded', 'true');
         },
 
         selectPlace: function (prediction, mainInput, config, state) {
             state.isSelecting = true;
+            var selectionId = ++aga._selectionId;
 
             if (aga.useNewAPI && !prediction._legacy) {
                 // New Places API
@@ -440,12 +659,20 @@
                 }
 
                 place.fetchFields({ fields: fields }).then(function () {
+                    if (aga._selectionId !== selectionId) return; // stale selection, discard
                     mainInput.value = place.formattedAddress || '';
                     mainInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+                    if (aga.detectPOBox(mainInput.value)) {
+                        aga.showPOBoxWarning(mainInput);
+                    } else {
+                        aga.removePOBoxWarning(mainInput);
+                    }
+
                     aga.applyMapping(place, config);
 
-                    if (config.show_map_preview && place.location) {
-                        aga.showMapPreview(mainInput, place.location, config);
+                    if (config.map_picker && place.location) {
+                        aga.centerMapPicker(place.location, config);
                     }
 
                     if (aga.useNewAPI) {
@@ -481,9 +708,16 @@
                 var detailFields = ['formatted_address', 'geometry', 'place_id', 'address_components'];
 
                 service.getDetails({ placeId: placeId, fields: detailFields }, function (result, status) {
+                    if (aga._selectionId !== selectionId) return; // stale selection, discard
                     if (status === google.maps.places.PlacesServiceStatus.OK && result) {
                         mainInput.value = result.formatted_address || '';
                         mainInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+                        if (aga.detectPOBox(mainInput.value)) {
+                            aga.showPOBoxWarning(mainInput);
+                        } else {
+                            aga.removePOBoxWarning(mainInput);
+                        }
 
                         // Convert legacy result to new API shape for applyMapping
                         var placeObj = {
@@ -501,8 +735,8 @@
 
                         aga.applyMapping(placeObj, config);
 
-                        if (config.show_map_preview && placeObj.location) {
-                            aga.showMapPreview(mainInput, placeObj.location, config);
+                        if (config.map_picker && placeObj.location) {
+                            aga.centerMapPicker(placeObj.location, config);
                         }
 
                         if (config.address_validation) {
@@ -529,6 +763,35 @@
                     setTimeout(function () { state.isSelecting = false; }, 100);
                 });
             }
+        },
+
+        detectPOBox: function (address) {
+            if (!address) return false;
+            var patterns = [
+                /\bP\.?\s*O\.?\s*Box\b/i,
+                /\bPost\s*Office\s*Box\b/i,
+                /\bPOB\b/i,
+                /\bAPO\b/i,
+                /\bFPO\b/i,
+                /\bDPO\b/i,
+                /\bGeneral\s*Delivery\b/i
+            ];
+            return patterns.some(function(p) { return p.test(address); });
+        },
+
+        showPOBoxWarning: function (mainInput) {
+            var existing = mainInput.parentNode.querySelector('.aga-pobox-warning');
+            if (existing) return; // already showing
+
+            var warning = document.createElement('div');
+            warning.className = 'aga-pobox-warning';
+            warning.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>This appears to be a PO Box or military address. Some carriers cannot deliver to PO Boxes.';
+            mainInput.parentNode.appendChild(warning);
+        },
+
+        removePOBoxWarning: function (mainInput) {
+            var existing = mainInput.parentNode.querySelector('.aga-pobox-warning');
+            if (existing) existing.remove();
         },
 
         validateAddress: function (mainInput, address, placeId) {
@@ -589,62 +852,23 @@
             return badge;
         },
 
-        showMapPreview: function (mainInput, location, config) {
-            // Normalize location to plain {lat, lng} object
-            var normalizedLocation = {
-                lat: typeof location.lat === 'function' ? location.lat() : parseFloat(location.lat),
-                lng: typeof location.lng === 'function' ? location.lng() : parseFloat(location.lng)
-            };
-
-            var containerId = 'aga-map-preview-' + (config.form_id || 'default');
-            var existing = document.getElementById(containerId);
-            if (existing) {
-                existing.remove();
-            }
-
-            var mapContainer = config.map_container_selector
-                ? document.querySelector(config.map_container_selector)
-                : null;
-
-            var mapDiv = document.createElement('div');
-            mapDiv.id = containerId;
-            mapDiv.className = 'aga-map-preview';
-
-            if (mapContainer) {
-                mapContainer.innerHTML = '';
-                mapContainer.appendChild(mapDiv);
-            } else {
-                mainInput.parentNode.insertBefore(mapDiv, mainInput.nextSibling);
-            }
-
-            google.maps.importLibrary('maps').then(function () {
-                var map = new google.maps.Map(mapDiv, {
-                    center: normalizedLocation,
-                    zoom: 15,
-                    disableDefaultUI: true,
-                    zoomControl: true,
-                    mapId: 'aga_preview_map'
-                });
-
-                google.maps.importLibrary('marker').then(function () {
-                    var marker = new google.maps.marker.AdvancedMarkerElement({
-                        map: map,
-                        position: normalizedLocation,
-                        gmpDraggable: true
-                    });
-
-                    marker.addListener('dragend', function () {
-                        var newPos = marker.position;
-                        aga.reverseGeocode(newPos, mainInput, config);
-                    });
-                });
-            });
+        /**
+         * Center the map picker on a location after autocomplete selection.
+         */
+        centerMapPicker: function (location, config) {
+            if (!config._mapPicker) return;
+            var lat = typeof location.lat === 'function' ? location.lat() : parseFloat(location.lat);
+            var lng = typeof location.lng === 'function' ? location.lng() : parseFloat(location.lng);
+            config._mapPicker.centerOn({ lat: lat, lng: lng });
         },
 
         reverseGeocode: function (latLng, mainInput, config) {
             var lat = typeof latLng.lat === 'function' ? latLng.lat() : latLng.lat;
             var lng = typeof latLng.lng === 'function' ? latLng.lng() : latLng.lng;
             var location = { lat: lat, lng: lng };
+
+            // Suppress autocomplete dropdown while setting value from map
+            mainInput.setAttribute('data-aga-suppress', '1');
 
             // Try Geocoding API first (requires Geocoding API enabled)
             var geocoder = new google.maps.Geocoder();
@@ -653,6 +877,12 @@
                     var result = results[0];
                     mainInput.value = result.formatted_address || '';
                     mainInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+                    if (aga.detectPOBox(mainInput.value)) {
+                        aga.showPOBoxWarning(mainInput);
+                    } else {
+                        aga.removePOBoxWarning(mainInput);
+                    }
 
                     // Update lat/lng with exact drop position
                     aga.updateLatLngFields(location, config);
@@ -671,12 +901,15 @@
                     if (config.address_validation) {
                         aga.validateAddress(mainInput, result.formatted_address || '', result.place_id || '');
                     }
+
+                    setTimeout(function () { mainInput.removeAttribute('data-aga-suppress'); }, 300);
                 } else {
                     // Geocoding API not enabled — just update coordinates
                     console.warn('Autocomplete Google Address: Geocoding failed (' + status + '). Enable the Geocoding API in Google Cloud Console for drag-to-update.');
                     aga.updateLatLngFields(location, config);
                     mainInput.value = lat.toFixed(6) + ', ' + lng.toFixed(6);
                     mainInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    setTimeout(function () { mainInput.removeAttribute('data-aga-suppress'); }, 300);
                 }
             });
         },
@@ -753,12 +986,21 @@
         highlightItem: function (items, index) {
             items.forEach(function (item, i) {
                 item.classList.toggle('aga-autocomplete-item--active', i === index);
+                item.setAttribute('aria-selected', i === index ? 'true' : 'false');
             });
         },
 
         hideDropdown: function (dropdown) {
             dropdown.style.display = 'none';
             dropdown.innerHTML = '';
+            // Update aria-expanded on the associated input
+            var wrapper = dropdown.parentNode;
+            if (wrapper) {
+                var input = wrapper.querySelector('[role="combobox"]');
+                if (input) {
+                    input.setAttribute('aria-expanded', 'false');
+                }
+            }
         },
 
         applyMapping: function (place, config) {
@@ -779,8 +1021,9 @@
                 // Set country FIRST — frameworks like WooCommerce re-render
                 // state/postcode fields when country changes.
                 if (config.selectors.country) {
-                    var countryPrimary = (config.formats.country === 'short') ? components.country_short : components.country_long;
-                    var countryAlt = (config.formats.country === 'short') ? components.country_long : components.country_short;
+                    var fmt = config.formats || {};
+                    var countryPrimary = (fmt.country === 'short') ? components.country_short : components.country_long;
+                    var countryAlt = (fmt.country === 'short') ? components.country_long : components.country_short;
                     aga.setFieldValue(config.selectors.country, countryPrimary, countryAlt);
                 }
 
@@ -795,7 +1038,7 @@
                 }
 
                 // Smart country-aware state mapping
-                var smartState = aga.getSmartState(components, countryCode, config.formats.state);
+                var smartState = aga.getSmartState(components, countryCode, (config.formats || {}).state);
                 var zipValue = components.postal_code;
 
                 // Delay state and postcode to allow framework re-render after country change.
@@ -969,18 +1212,20 @@
                 var li = document.createElement('li');
                 li.className = 'aga-autocomplete-item aga-saved-item';
                 li.textContent = entry.address;
+                li.style.cursor = 'pointer';
 
                 li.addEventListener('mouseenter', function () {
                     var items = dropdown.querySelectorAll('.aga-autocomplete-item');
                     aga.highlightItem(items, index);
                 });
 
-                li.addEventListener('click', function () {
+                var savedSelectHandler = function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     state.isSelecting = true;
                     mainInput.value = entry.address;
                     mainInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-                    // Build a place-like object from stored data.
                     var location = null;
                     if (entry.lat && entry.lng) {
                         location = {
@@ -998,8 +1243,8 @@
 
                     aga.applyMapping(placeObj, config);
 
-                    if (config.show_map_preview && location) {
-                        aga.showMapPreview(mainInput, location, config);
+                    if (config.map_picker && location) {
+                        aga.centerMapPicker(location, config);
                     }
 
                     if (config.address_validation && entry.address) {
@@ -1008,7 +1253,9 @@
 
                     aga.hideDropdown(dropdown);
                     setTimeout(function () { state.isSelecting = false; }, 100);
-                });
+                };
+                li.addEventListener('click', savedSelectHandler);
+                li.addEventListener('touchend', savedSelectHandler);
 
                 dropdown.appendChild(li);
             });

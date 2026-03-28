@@ -195,8 +195,9 @@ class AGA_Elementor_Widget extends \Elementor\Widget_Base {
             'show_map',
             array(
                 'label'        => $is_paying
-                    ? esc_html__( 'Show Map Preview', 'autocomplete-google-address' )
-                    : esc_html__( 'Show Map Preview (Pro)', 'autocomplete-google-address' ),
+                    ? esc_html__( 'Map Picker', 'autocomplete-google-address' )
+                    : esc_html__( 'Map Picker (Pro)', 'autocomplete-google-address' ),
+                'description'  => esc_html__( 'Show an interactive map below the input. Users can click or drag the pin to pick an address.', 'autocomplete-google-address' ),
                 'type'         => \Elementor\Controls_Manager::SWITCHER,
                 'label_on'     => esc_html__( 'Yes', 'autocomplete-google-address' ),
                 'label_off'    => esc_html__( 'No', 'autocomplete-google-address' ),
@@ -211,6 +212,36 @@ class AGA_Elementor_Widget extends \Elementor\Widget_Base {
                 'label'        => $is_paying
                     ? esc_html__( 'Geolocation Auto-detect', 'autocomplete-google-address' )
                     : esc_html__( 'Geolocation Auto-detect (Pro)', 'autocomplete-google-address' ),
+                'type'         => \Elementor\Controls_Manager::SWITCHER,
+                'label_on'     => esc_html__( 'Yes', 'autocomplete-google-address' ),
+                'label_off'    => esc_html__( 'No', 'autocomplete-google-address' ),
+                'return_value' => 'yes',
+                'default'      => '',
+            )
+        );
+
+        $this->add_control(
+            'show_address_validation',
+            array(
+                'label'        => $is_paying
+                    ? esc_html__( 'Address Validation', 'autocomplete-google-address' )
+                    : esc_html__( 'Address Validation (Pro)', 'autocomplete-google-address' ),
+                'description'  => esc_html__( 'Verify addresses with a visual badge (Verified / Partial / Not verified).', 'autocomplete-google-address' ),
+                'type'         => \Elementor\Controls_Manager::SWITCHER,
+                'label_on'     => esc_html__( 'Yes', 'autocomplete-google-address' ),
+                'label_off'    => esc_html__( 'No', 'autocomplete-google-address' ),
+                'return_value' => 'yes',
+                'default'      => '',
+            )
+        );
+
+        $this->add_control(
+            'show_saved_addresses',
+            array(
+                'label'        => $is_paying
+                    ? esc_html__( 'Saved Addresses', 'autocomplete-google-address' )
+                    : esc_html__( 'Saved Addresses (Pro)', 'autocomplete-google-address' ),
+                'description'  => esc_html__( 'Show recently used addresses for logged-in users.', 'autocomplete-google-address' ),
                 'type'         => \Elementor\Controls_Manager::SWITCHER,
                 'label_on'     => esc_html__( 'Yes', 'autocomplete-google-address' ),
                 'label_off'    => esc_html__( 'No', 'autocomplete-google-address' ),
@@ -349,8 +380,10 @@ class AGA_Elementor_Widget extends \Elementor\Widget_Base {
             $mode = 'single_line';
         }
 
-        $show_map        = $is_paying && 'yes' === $settings['show_map'];
-        $show_geolocation = $is_paying && 'yes' === $settings['show_geolocation'];
+        $show_map              = $is_paying && 'yes' === ( $settings['show_map'] ?? '' );
+        $show_geolocation      = $is_paying && 'yes' === ( $settings['show_geolocation'] ?? '' );
+        $show_validation       = $is_paying && 'yes' === ( $settings['show_address_validation'] ?? '' );
+        $show_saved_addresses  = $is_paying && 'yes' === ( $settings['show_saved_addresses'] ?? '' );
 
         // Build HTML.
         ?>
@@ -378,7 +411,7 @@ class AGA_Elementor_Widget extends \Elementor\Widget_Base {
                 <?php endforeach; ?>
             <?php endif; ?>
             <?php if ( $show_map ) : ?>
-                <div id="<?php echo esc_attr( $instance_id ); ?>-map" class="aga-map-preview aga-elementor-map"></div>
+                <div id="<?php echo esc_attr( $instance_id ); ?>-map" class="aga-map-picker-container aga-elementor-map"></div>
             <?php endif; ?>
         </div>
         <?php
@@ -392,11 +425,10 @@ class AGA_Elementor_Widget extends \Elementor\Widget_Base {
             'selectors'              => array(),
             'component_restrictions' => array(),
             'place_types'            => '',
-            'show_map_preview'       => $show_map,
-            'map_container_selector' => $show_map ? '#' . $instance_id . '-map' : '',
+            'map_picker'             => $show_map,
             'geolocation'            => $show_geolocation,
-            'address_validation'     => false,
-            'saved_addresses'        => false,
+            'address_validation'     => $show_validation,
+            'saved_addresses'        => $show_saved_addresses,
         );
 
         // Smart mapping selectors.

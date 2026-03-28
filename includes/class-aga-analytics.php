@@ -78,7 +78,7 @@ class AGA_Analytics {
         }
 
         $event_type = isset( $_POST['event_type'] ) ? sanitize_text_field( $_POST['event_type'] ) : '';
-        if ( ! in_array( $event_type, array( 'search', 'selection' ), true ) ) {
+        if ( ! in_array( $event_type, array( 'search', 'selection', 'abandonment' ), true ) ) {
             wp_send_json_error( 'Invalid event type', 400 );
         }
 
@@ -136,6 +136,11 @@ class AGA_Analytics {
 
         $table_name = $wpdb->prefix . self::TABLE_NAME;
         $date_from  = gmdate( 'Y-m-d', strtotime( "-{$days} days" ) );
+
+        // Validate date format to guard against unexpected values.
+        if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date_from ) ) {
+            $date_from = gmdate( 'Y-m-d', strtotime( '-30 days' ) );
+        }
 
         // Total searches.
         $total_searches = (int) $wpdb->get_var( $wpdb->prepare(

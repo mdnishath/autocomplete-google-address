@@ -10,6 +10,8 @@
  * @since      1.0.0
  */
 
+defined( 'ABSPATH' ) || exit;
+
 class AGA_Import_Export {
 
     /**

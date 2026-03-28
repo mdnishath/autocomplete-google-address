@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://wordpress.org/plugins/autocomplete-google-address/"><img src="https://img.shields.io/badge/version-5.1.2-blue?style=for-the-badge&logo=wordpress&logoColor=white" alt="Version 5.1.2"></a>
+  <a href="https://wordpress.org/plugins/autocomplete-google-address/"><img src="https://img.shields.io/badge/version-5.2.0-blue?style=for-the-badge&logo=wordpress&logoColor=white" alt="Version 5.2.0"></a>
   <a href="https://wordpress.org/plugins/autocomplete-google-address/"><img src="https://img.shields.io/badge/WordPress-6.0%2B-21759B?style=for-the-badge&logo=wordpress&logoColor=white" alt="WordPress 6.0+"></a>
   <a href="https://www.php.net/"><img src="https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 7.4+"></a>
   <a href="https://www.gnu.org/licenses/gpl-2.0.html"><img src="https://img.shields.io/badge/license-GPL--2.0--or--later-green?style=for-the-badge" alt="License GPL-2.0-or-later"></a>
@@ -191,7 +191,38 @@ Use the `[aga_autocomplete]` shortcode to embed an autocomplete field anywhere:
 
 ## 📋 Changelog
 
-### v5.1.2 — Bug Fix (Latest)
+### v5.2.0 — Major Feature Release (Latest)
+
+**New Features:**
+- 🗺️ **Map Picker** — Interactive map below address input. Click or drag pin to pick address. Auto-centers on restricted country.
+- ⚠️ **PO Box Detection** — Visual warning when PO Box / APO / Military addresses are detected
+- 🔗 **Fluent Forms** — New preset integration for Fluent Forms
+- 🥷 **Ninja Forms** — New preset integration for Ninja Forms
+- 🧙 **Enhanced Setup Wizard** — WooCommerce feature config step with live preview, country/types/language settings
+- 🔔 **Address Verification Webhook** — Send alerts to Slack/Zapier on invalid addresses (Pro)
+- 🏷️ **White Label Mode** — Custom admin menu name for agencies (Pro)
+- 📊 **Checkout Abandonment Tracking** — Track users who type address but don't complete checkout (Pro)
+- 🔌 **REST API** — `/aga/v1/config` and `/aga/v1/validate` endpoints for headless stores (Pro)
+- 🌙 **Dark Mode** — Dropdown adapts to `prefers-color-scheme: dark`
+- 🔄 **RTL Support** — Full right-to-left language support (Arabic, Hebrew)
+- ♿ **ARIA Accessibility** — Screen reader support with listbox/combobox roles
+- 📱 **Elementor** — Address Validation, Geolocation, Saved Addresses now in both Widget and Form Field
+
+**Bug Fixes:**
+- 🍎 **iOS/Safari** — Touch events, autocomplete suppression, smooth scrolling
+- 🐛 Race condition in rapid address selection
+- 🐛 Stale API responses discarded on fast typing
+- 🐛 Map drag no longer re-triggers autocomplete dropdown
+- 🐛 Null safety for config.formats
+- 🐛 Google Maps polling timeout (20s max)
+- 🐛 ABSPATH protection on 6 PHP files
+
+**Performance:**
+- ⚡ Combined 2 DB queries into 1 for frontend loading
+- ⚡ Health check results cached (5 min)
+- ⚡ Async Google Maps loading
+
+### v5.1.2 — Bug Fix
 
 - 🐛 **Fix:** Settings toggle not saving — unchecking toggles now properly saves as OFF
 - 🐛 **Fix:** `pointer is not a function` JavaScript error on settings page

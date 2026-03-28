@@ -9,6 +9,8 @@
  * @subpackage Autocomplete_Google_Address/public
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * The public-facing functionality of the plugin.
  *
@@ -218,6 +220,12 @@ class AGA_Frontend {
             $frontend_data['attribution_text'] = sanitize_text_field( $settings['attribution_text'] );
         }
 
+        // White label flag.
+        $frontend_data['white_label'] = aga_get_setting( 'white_label' ) === '1';
+
+        // Checkout abandonment tracking flag.
+        $frontend_data['track_abandonment'] = aga_get_setting( 'track_abandonment' ) === '1';
+
         wp_localize_script( $this->plugin_name, 'aga_frontend_data', $frontend_data );
     }
 
@@ -228,50 +236,50 @@ class AGA_Frontend {
      * @since 1.1.0
      */
     public function load_automatic_forms() {
-        $forms_to_load = array();
-
-        // 1. Get globally active forms
-        $global_args = array(
+        // Single query: get all forms that are either global or page-specific.
+        $all_forms = get_posts( array(
             'post_type'      => 'aga_form',
             'posts_per_page' => -1,
-            'meta_key'       => 'Nish_aga_activate_globally',
-            'meta_value'     => '1',
-            'fields'         => 'ids',
-        );
-        $global_forms = get_posts( $global_args );
-        if ( ! empty( $global_forms ) ) {
-            $forms_to_load = array_merge( $forms_to_load, $global_forms );
+            'post_status'    => 'publish',
+            'meta_query'     => array(
+                'relation' => 'OR',
+                array(
+                    'key'   => 'Nish_aga_activate_globally',
+                    'value' => '1',
+                ),
+                array(
+                    'key'     => 'Nish_aga_load_on_pages',
+                    'compare' => 'EXISTS',
+                ),
+            ),
+            'fields' => 'ids',
+        ) );
+
+        if ( empty( $all_forms ) ) {
+            return;
         }
 
-        // 2. Get forms active for the current page
+        // Filter in PHP: keep global forms and page-specific forms matching the current page.
+        $forms_to_load   = array();
         $current_page_id = get_queried_object_id();
-        if ( $current_page_id ) {
-            $page_args = array(
-                'post_type'      => 'aga_form',
-                'posts_per_page' => -1,
-                'meta_query'     => array(
-                    array(
-                        'key'     => 'Nish_aga_load_on_pages',
-                        'compare' => 'EXISTS',
-                    ),
-                ),
-                'fields'         => 'ids',
-            );
-            $page_specific_forms = get_posts( $page_args );
-            if ( ! empty( $page_specific_forms ) ) {
-                foreach ( $page_specific_forms as $form_id ) {
-                    $selected_pages = get_post_meta( $form_id, 'Nish_aga_load_on_pages', true );
-                    if ( is_array( $selected_pages ) && in_array( $current_page_id, $selected_pages, true ) ) {
-                        $forms_to_load[] = $form_id;
-                    }
+
+        foreach ( $all_forms as $form_id ) {
+            $global = get_post_meta( $form_id, 'Nish_aga_activate_globally', true );
+            if ( '1' === $global ) {
+                $forms_to_load[] = $form_id;
+                continue;
+            }
+
+            if ( $current_page_id ) {
+                $pages = get_post_meta( $form_id, 'Nish_aga_load_on_pages', true );
+                if ( is_array( $pages ) && in_array( $current_page_id, $pages, true ) ) {
+                    $forms_to_load[] = $form_id;
                 }
             }
         }
 
-        if ( ! empty( $forms_to_load ) ) {
-            foreach ( array_unique( $forms_to_load ) as $form_id ) {
-                $this->prepare_scripts_for_form( $form_id );
-            }
+        foreach ( $forms_to_load as $form_id ) {
+            $this->prepare_scripts_for_form( $form_id );
         }
     }
     /**

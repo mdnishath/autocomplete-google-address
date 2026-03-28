@@ -98,7 +98,7 @@ class AGA_Shortcode {
 
         // Build the HTML.
         $mode       = ! empty( $config['mode'] ) ? $config['mode'] : 'single_line';
-        $show_map   = ! empty( $config['show_map_preview'] );
+        $show_map   = ! empty( $config['map_picker'] );
         $wrapper_class = 'aga-shortcode-wrapper';
         if ( ! empty( $atts['class'] ) ) {
             $wrapper_class .= ' ' . sanitize_html_class( $atts['class'] );
@@ -106,9 +106,9 @@ class AGA_Shortcode {
 
         $html = $this->build_html( $instance_id, $atts, $mode, $show_map, $wrapper_class );
 
-        // Update map container selector if map is shown.
+        // Ensure map_picker is set if config has it enabled.
         if ( $show_map ) {
-            $config['map_container_selector'] = '#' . $instance_id . '-map';
+            $config['map_picker'] = true;
         }
 
         // Store the config and ensure scripts will be enqueued.
@@ -143,8 +143,7 @@ class AGA_Shortcode {
             'main_selector'          => '#' . $instance_id . '-input',
             'selectors'              => array(),
             'component_restrictions' => array(),
-            'show_map_preview'       => $show_map,
-            'map_container_selector' => $show_map ? '#' . $instance_id . '-map' : '',
+            'map_picker'             => $show_map,
             'geolocation'            => false,
             'address_validation'     => false,
         );
@@ -228,7 +227,7 @@ class AGA_Shortcode {
 
         // Map container.
         if ( $show_map ) {
-            $html .= '<div id="' . esc_attr( $instance_id ) . '-map" class="aga-map-preview aga-shortcode-map"></div>';
+            $html .= '<div id="' . esc_attr( $instance_id ) . '-map" class="aga-map-picker-container aga-shortcode-map"></div>';
         }
 
         $html .= '</div>';

@@ -80,6 +80,23 @@ class AGA_Settings {
         $active_tab = isset( $input['_aga_tab'] ) ? sanitize_text_field( $input['_aga_tab'] ) : '';
         unset( $new_input['_aga_tab'] ); // Don't persist the tab tracker.
 
+        // General tab fields.
+        if ( 'general' === $active_tab || empty( $active_tab ) ) {
+            // Webhook URL.
+            if ( isset( $input['webhook_url'] ) ) {
+                $new_input['webhook_url'] = esc_url_raw( $input['webhook_url'] );
+            }
+
+            // White Label toggle + custom name.
+            $new_input['white_label'] = ! empty( $input['white_label'] ) ? '1' : '';
+            if ( isset( $input['white_label_name'] ) ) {
+                $new_input['white_label_name'] = sanitize_text_field( $input['white_label_name'] );
+            }
+
+            // Checkout Abandonment Tracking toggle.
+            $new_input['track_abandonment'] = ! empty( $input['track_abandonment'] ) ? '1' : '';
+        }
+
         // Advanced tab toggles.
         if ( 'advanced' === $active_tab || empty( $active_tab ) ) {
             $new_input['do_not_load_gmaps_api'] = ! empty( $input['do_not_load_gmaps_api'] ) ? 1 : 0;

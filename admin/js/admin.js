@@ -249,17 +249,44 @@
             activeIndex = index;
         }
 
-        var autocompleteService = null;
         var placesService = null;
+
+        // Read current form config values for preview filtering
+        function buildNewApiRequest(query) {
+            var request = { input: query, sessionToken: sessionToken };
+
+            // Country restriction
+            var countrySel = document.getElementById('aga_country_restriction');
+            if (countrySel) {
+                var countries = Array.from(countrySel.selectedOptions).map(function(o) { return o.value.toUpperCase(); }).slice(0, 5);
+                if (countries.length) {
+                    request.includedRegionCodes = countries;
+                }
+            }
+
+            // Place types
+            var typesSel = document.querySelector('select[name="Nish_aga_place_types"]');
+            if (typesSel && typesSel.value) {
+                var typeMap = {
+                    'address':       'street_address',
+                    'geocode':       'geocode',
+                    'establishment': 'establishment',
+                    '(regions)':     'administrative_area_level_1',
+                    '(cities)':      'locality'
+                };
+                request.includedPrimaryTypes = [typeMap[typesSel.value] || typesSel.value];
+            }
+
+            return request;
+        }
 
         function fetchSuggestions(query) {
             createDropdown();
             dropdown.innerHTML = '<li style="padding:10px 12px;color:#888;font-size:13px;">Searching...</li>';
             dropdown.style.display = 'block';
 
-            // Try new API first, fallback to legacy
             if (google.maps.places.AutocompleteSuggestion && typeof google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions === 'function') {
-                var request = { input: query, sessionToken: sessionToken };
+                var request = buildNewApiRequest(query);
                 google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
                     .then(function (result) {
                         var suggestions = result.suggestions || [];
@@ -271,30 +298,12 @@
                         }
                     })
                     .catch(function (err) {
-                        console.warn('AGA Live Preview: New API failed, trying legacy...', err);
-                        fetchSuggestionsLegacy(query);
+                        console.warn('AGA Live Preview:', err);
+                        dropdown.innerHTML = '<li style="padding:10px 12px;color:#c00;font-size:13px;">API error \u2014 please enable <a href="https://console.cloud.google.com/apis/library/places.googleapis.com" target="_blank" style="color:#c00;text-decoration:underline;">Places API (New)</a></li>';
                     });
             } else {
-                fetchSuggestionsLegacy(query);
+                dropdown.innerHTML = '<li style="padding:10px 12px;color:#c00;font-size:13px;">Places API not available</li>';
             }
-        }
-
-        function fetchSuggestionsLegacy(query) {
-            if (!autocompleteService) {
-                autocompleteService = new google.maps.places.AutocompleteService();
-            }
-            autocompleteService.getPlacePredictions({ input: query, sessionToken: sessionToken }, function (predictions, status) {
-                if (status === google.maps.places.PlacesServiceStatus.OK && predictions && predictions.length) {
-                    // Wrap legacy predictions to match new API shape
-                    var suggestions = predictions.map(function (p) {
-                        return { placePrediction: { text: { toString: function () { return p.description; } }, placeId: p.place_id, _legacy: p } };
-                    });
-                    renderDropdown(suggestions);
-                } else {
-                    dropdown.innerHTML = '<li style="padding:10px 12px;color:#888;font-size:13px;">No results found</li>';
-                    setTimeout(hideDropdown, 2000);
-                }
-            });
         }
 
         function renderDropdown(suggestions) {
@@ -496,6 +505,33 @@
                 hideDropdown();
             }
         });
+
+        // Reactive: re-fetch preview when config fields change
+        function refetchPreview() {
+            var val = previewInput.value.trim();
+            if (val.length >= 2 && mapsReady) {
+                if (debounceTimer) clearTimeout(debounceTimer);
+                fetchSuggestions(val);
+            }
+        }
+
+        // Country restriction (Select2)
+        var countryField = document.getElementById('aga_country_restriction');
+        if (countryField) {
+            $(countryField).on('change', refetchPreview);
+        }
+
+        // Place types
+        var typesField = document.querySelector('select[name="Nish_aga_place_types"]');
+        if (typesField) {
+            typesField.addEventListener('change', refetchPreview);
+        }
+
+        // Language
+        var langField = document.querySelector('select[name="Nish_aga_language_override"]');
+        if (langField) {
+            $(langField).on('change', refetchPreview);
+        }
     })();
 
 })(jQuery);

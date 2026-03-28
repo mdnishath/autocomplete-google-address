@@ -22,10 +22,15 @@ public function __construct() {
      */
     public function register_post_type() {
 
+        $menu_name = 'Google Address';
+        if ( function_exists( 'aga_get_setting' ) && aga_get_setting( 'white_label' ) === '1' && ! empty( aga_get_setting( 'white_label_name' ) ) ) {
+            $menu_name = aga_get_setting( 'white_label_name' );
+        }
+
         $labels = array(
             'name'               => 'Address Forms',
             'singular_name'      => 'Address Form',
-            'menu_name'          => 'Google Address',
+            'menu_name'          => $menu_name,
             'name_admin_bar'     => 'Address Form',
             'add_new'            => 'Add New Form Config',
             'add_new_item'       => 'Add New',
@@ -171,12 +176,6 @@ public function add_custom_add_new_menu() {
 
         update_post_meta(
             $post_id,
-            'Nish_aga_show_map_preview',
-            isset( $_POST['Nish_aga_show_map_preview'] ) ? '1' : ''
-        );
-
-        update_post_meta(
-            $post_id,
             'Nish_aga_address_validation',
             isset( $_POST['Nish_aga_address_validation'] ) ? '1' : ''
         );
@@ -191,6 +190,12 @@ public function add_custom_add_new_menu() {
             $post_id,
             'Nish_aga_saved_addresses',
             isset( $_POST['Nish_aga_saved_addresses'] ) ? '1' : ''
+        );
+
+        update_post_meta(
+            $post_id,
+            'Nish_aga_map_picker',
+            isset( $_POST['Nish_aga_map_picker'] ) ? '1' : ''
         );
 
         if ( isset( $_POST['Nish_aga_load_on_pages'] ) && is_array( $_POST['Nish_aga_load_on_pages'] ) ) {

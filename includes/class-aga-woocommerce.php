@@ -36,6 +36,30 @@ class AGA_WooCommerce {
 		add_filter( 'aga_form_configs', array( $this, 'add_checkout_configs' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue' ) );
 		add_action( 'wp_footer', array( $this, 'output_woo_helper_script' ) );
+		add_action( 'admin_notices', array( $this, 'forms_list_notice' ) );
+	}
+
+	/**
+	 * Show an info notice on the Forms list page when WooCommerce integration is active.
+	 */
+	public function forms_list_notice() {
+		$screen = get_current_screen();
+		if ( ! $screen || 'edit-aga_form' !== $screen->id ) {
+			return;
+		}
+
+		$settings_url = admin_url( 'edit.php?post_type=aga_form&page=aga-settings&tab=woocommerce' );
+		?>
+		<div class="notice notice-info is-dismissible">
+			<p>
+				<span class="dashicons dashicons-cart" style="color: #7f54b3; margin-right: 4px;"></span>
+				<strong><?php esc_html_e( 'WooCommerce Checkout Autocomplete is active', 'autocomplete-google-address' ); ?></strong>
+				&mdash;
+				<?php esc_html_e( 'Billing and shipping address fields are auto-configured. No form entry needed.', 'autocomplete-google-address' ); ?>
+				<a href="<?php echo esc_url( $settings_url ); ?>"><?php esc_html_e( 'Manage in Settings', 'autocomplete-google-address' ); ?> &rarr;</a>
+			</p>
+		</div>
+		<?php
 	}
 
 	/**
@@ -60,11 +84,21 @@ class AGA_WooCommerce {
 			return $configs;
 		}
 
+		// Skip dynamic injection if WooCommerce form configs were created by the wizard.
+		$existing = get_posts( array(
+			'post_type'      => 'aga_form',
+			'posts_per_page' => 1,
+			'meta_key'       => 'Nish_aga_form_preset',
+			'meta_value'     => 'woocommerce',
+			'fields'         => 'ids',
+		) );
+		if ( ! empty( $existing ) ) {
+			return $configs;
+		}
+
 		$is_block = $this->detect_block_checkout();
 
 		if ( $is_block ) {
-			// Block checkout: inject BOTH classic and block selectors.
-			// Some themes/plugins render classic fields as fallback inside block checkout.
 			$configs = array_merge( $configs, $this->get_block_checkout_configs() );
 		} else {
 			$configs = array_merge( $configs, $this->get_classic_checkout_configs() );
@@ -131,10 +165,10 @@ class AGA_WooCommerce {
 				),
 				'component_restrictions' => array(),
 				'place_types'            => '',
-				'show_map_preview'       => false,
 				'geolocation'            => false,
 				'address_validation'     => false,
 				'saved_addresses'        => false,
+				'map_picker'             => false,
 			),
 			array(
 				'form_id'                => 'woo_shipping',
@@ -153,10 +187,10 @@ class AGA_WooCommerce {
 				),
 				'component_restrictions' => array(),
 				'place_types'            => '',
-				'show_map_preview'       => false,
 				'geolocation'            => false,
 				'address_validation'     => false,
 				'saved_addresses'        => false,
+				'map_picker'             => false,
 			),
 		);
 	}
@@ -185,10 +219,10 @@ class AGA_WooCommerce {
 				),
 				'component_restrictions' => array(),
 				'place_types'            => '',
-				'show_map_preview'       => false,
 				'geolocation'            => false,
 				'address_validation'     => false,
 				'saved_addresses'        => false,
+				'map_picker'             => false,
 			),
 			array(
 				'form_id'                => 'woo_block_shipping',
@@ -207,10 +241,10 @@ class AGA_WooCommerce {
 				),
 				'component_restrictions' => array(),
 				'place_types'            => '',
-				'show_map_preview'       => false,
 				'geolocation'            => false,
 				'address_validation'     => false,
 				'saved_addresses'        => false,
+				'map_picker'             => false,
 			),
 		);
 	}

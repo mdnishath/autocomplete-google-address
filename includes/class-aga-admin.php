@@ -9,6 +9,8 @@
  * @subpackage Autocomplete_Google_Address/admin
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * The admin-specific functionality of the plugin.
  *
