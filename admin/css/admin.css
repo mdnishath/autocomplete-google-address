@@ -828,6 +828,31 @@ input:focus + .aga-slider {
     gap: var(--aga-space-lg);
 }
 
+/* Disabled Select2 and select fields (non-Pro) */
+.aga-field-group select:disabled,
+.aga-field-group input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f7f7f7;
+}
+
+.aga-field-group .select2-container--disabled .select2-selection {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f7f7f7 !important;
+    border-color: #ddd !important;
+}
+
+.aga-field-group .select2-container--disabled .select2-selection__choice {
+    opacity: 0.6;
+    background-color: #999 !important;
+    border-color: #888 !important;
+}
+
+.aga-field-group .select2-container--disabled .select2-selection__choice__remove {
+    display: none;
+}
+
 
 /* ==========================================================================
    11. Tooltip

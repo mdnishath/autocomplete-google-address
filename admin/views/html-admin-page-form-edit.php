@@ -21,7 +21,6 @@ $country_restriction = get_post_meta( $post->ID, 'Nish_aga_country_restriction',
 $place_types         = get_post_meta( $post->ID, 'Nish_aga_place_types', true );
 $language_override = get_post_meta( $post->ID, 'Nish_aga_language_override', true );
 $form_preset       = get_post_meta( $post->ID, 'Nish_aga_form_preset', true );
-$map_container_sel = get_post_meta( $post->ID, 'Nish_aga_map_container_selector', true );
 $address_validation = get_post_meta( $post->ID, 'Nish_aga_address_validation', true );
 $geolocation       = get_post_meta( $post->ID, 'Nish_aga_geolocation', true );
 $saved_addresses   = get_post_meta( $post->ID, 'Nish_aga_saved_addresses', true );
@@ -156,12 +155,6 @@ function aga_pro_label( $checkout_url, $is_paying ) {
 								<?php endforeach; ?>
 							</select>
 						</div>
-						<?php if ( $is_paying ) : ?>
-						<div class="aga-field-group">
-							<label><?php esc_html_e( 'Map Container', 'autocomplete-google-address' ); ?></label>
-							<input type="text" name="Nish_aga_map_container_selector" value="<?php echo esc_attr( $map_container_sel ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'Optional — auto below input', 'autocomplete-google-address' ); ?>" />
-						</div>
-						<?php endif; ?>
 					</div>
 				</div>
 			</div>
