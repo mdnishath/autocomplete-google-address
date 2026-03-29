@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google, maps, places, autocomplete, address, form, woocommerce, contact form 7, wpforms, gravity forms, elementor, checkout, address autocomplete
 Requires at least: 5.4
 Tested up to: 6.9
-Stable tag: 5.2.1
+Stable tag: 5.2.2
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -227,6 +227,11 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 8. Form Presets — One-click setup for popular form plugins
 
 == Changelog ==
+
+= 5.2.2 =
+* FIX: Map Picker no longer shows a wrong pin in Mali/Africa on initial load. Marker is hidden until real location is found.
+* FIX: Map Picker no longer appears on the admin form edit page — only shows on the frontend where customers interact.
+* FIX: Disabled select/input fields (non-Pro) now display cleanly without broken checkmark pattern.
 
 = 5.2.1 =
 * IMPROVED: Map Picker now uses real GPS geolocation to center on user's exact location (zoom 17) instead of country center.

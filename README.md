@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://wordpress.org/plugins/autocomplete-google-address/"><img src="https://img.shields.io/badge/version-5.2.1-blue?style=for-the-badge&logo=wordpress&logoColor=white" alt="Version 5.2.1"></a>
+  <a href="https://wordpress.org/plugins/autocomplete-google-address/"><img src="https://img.shields.io/badge/version-5.2.2-blue?style=for-the-badge&logo=wordpress&logoColor=white" alt="Version 5.2.2"></a>
   <a href="https://wordpress.org/plugins/autocomplete-google-address/"><img src="https://img.shields.io/badge/WordPress-6.0%2B-21759B?style=for-the-badge&logo=wordpress&logoColor=white" alt="WordPress 6.0+"></a>
   <a href="https://www.php.net/"><img src="https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 7.4+"></a>
   <a href="https://www.gnu.org/licenses/gpl-2.0.html"><img src="https://img.shields.io/badge/license-GPL--2.0--or--later-green?style=for-the-badge" alt="License GPL-2.0-or-later"></a>
@@ -191,7 +191,13 @@ Use the `[aga_autocomplete]` shortcode to embed an autocomplete field anywhere:
 
 ## 📋 Changelog
 
-### v5.2.1 — Map Picker GPS + Zoom Control (Latest)
+### v5.2.2 — Map Picker Bug Fixes (Latest)
+
+- 🐛 **Fix:** Map Picker no longer shows wrong pin in Mali/Africa on initial load — marker hidden until real location found
+- 🐛 **Fix:** Map Picker no longer appears on admin form edit page — only on frontend
+- 🐛 **Fix:** Disabled select fields display cleanly for free users
+
+### v5.2.1 — Map Picker GPS + Zoom Control
 
 - 🗺️ **Map Picker GPS** — Map now centers on user's real GPS location (zoom 17) instead of country center
 - 🌐 **IP Fallback** — If GPS denied, uses IP-based geolocation for approximate location (zoom 14)
