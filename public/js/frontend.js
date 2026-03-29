@@ -439,23 +439,31 @@
             var center = { lat: countryfallback.lat, lng: countryfallback.lng };
             var initZoom = countryfallback.zoom;
 
-            // Try to get user's actual location and update the map
+            // Place the marker and center map on a location
+            function showLocation(latLng, zoom) {
+                if (pickerMap) {
+                    pickerMap.setCenter(latLng);
+                    pickerMap.setZoom(zoom);
+                }
+                if (pickerMarker) {
+                    pickerMarker.position = latLng;
+                    pickerMarker.map = pickerMap; // Make visible
+                }
+            }
+
+            // Try to get user's actual location
             function locateUser() {
                 // Priority 1: Browser geolocation (GPS/WiFi — exact location)
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         function (pos) {
-                            var userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                            if (pickerMap) {
-                                pickerMap.setCenter(userLoc);
-                                pickerMap.setZoom(mapZoom);
-                            }
-                            if (pickerMarker) {
-                                pickerMarker.position = userLoc;
-                            }
+                            showLocation(
+                                { lat: pos.coords.latitude, lng: pos.coords.longitude },
+                                mapZoom
+                            );
                         },
                         function () {
-                            // Priority 2: IP-based geolocation via free API
+                            // Priority 2: IP-based geolocation
                             ipGeolocate();
                         },
                         { enableHighAccuracy: true, timeout: 8000, maximumAge: 300000 }
@@ -466,31 +474,29 @@
             }
 
             function ipGeolocate() {
-                // Use a free IP geolocation service to get approximate location
                 try {
                     fetch('https://ipapi.co/json/', { mode: 'cors' })
                         .then(function (res) { return res.json(); })
                         .then(function (data) {
                             if (data && data.latitude && data.longitude) {
-                                var ipLoc = { lat: parseFloat(data.latitude), lng: parseFloat(data.longitude) };
-                                if (pickerMap) {
-                                    pickerMap.setCenter(ipLoc);
-                                    pickerMap.setZoom(14);
-                                }
-                                if (pickerMarker) {
-                                    pickerMarker.position = ipLoc;
-                                }
+                                showLocation(
+                                    { lat: parseFloat(data.latitude), lng: parseFloat(data.longitude) },
+                                    Math.min(mapZoom, 14)
+                                );
+                            } else {
+                                // IP lookup returned no coords — show country fallback
+                                showLocation(center, initZoom);
                             }
                         })
                         .catch(function () {
-                            // Stays on country fallback — no action needed
+                            showLocation(center, initZoom);
                         });
                 } catch (e) {
-                    // Stays on country fallback
+                    showLocation(center, initZoom);
                 }
             }
 
-            // Initialize map immediately with country fallback, then locate user
+            // Initialize map — marker hidden until we have a real location
             function initMap() {
                 pickerMap = new google.maps.Map(mapContainer, {
                     center: center,
@@ -503,12 +509,12 @@
 
                 google.maps.importLibrary('marker').then(function (markerLib) {
                     pickerMarker = new markerLib.AdvancedMarkerElement({
-                        map: pickerMap,
+                        map: null, // Hidden initially — no map assigned
                         position: center,
                         gmpDraggable: true,
                     });
 
-                    // Once marker is ready, try to locate the user
+                    // Locate user — marker becomes visible once location is found
                     locateUser();
 
                     // Drag marker to pick address
