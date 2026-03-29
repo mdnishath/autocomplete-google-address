@@ -203,8 +203,9 @@
                 aga.setupGeolocationButton(mainInput, wrapper, config);
             }
 
-            // Map Picker button (Pro feature)
-            if (config.map_picker) {
+            // Map Picker (Pro feature) — only on frontend, not in WP admin
+            var isAdmin = document.body.classList.contains('wp-admin');
+            if (config.map_picker && !isAdmin) {
                 aga.setupMapPickerButton(mainInput, wrapper, config, state);
             }
 
