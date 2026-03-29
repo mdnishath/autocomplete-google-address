@@ -372,7 +372,7 @@
                 }
             };
 
-            // Country center coordinates for restricted countries
+            // Country center coordinates (last fallback)
             var countryCenters = {
                 US: { lat: 39.8283, lng: -98.5795, zoom: 4 },
                 GB: { lat: 51.5074, lng: -0.1278, zoom: 6 },
@@ -382,7 +382,7 @@
                 DE: { lat: 51.1657, lng: 10.4515, zoom: 6 },
                 FR: { lat: 46.2276, lng: 2.2137, zoom: 6 },
                 IN: { lat: 20.5937, lng: 78.9629, zoom: 5 },
-                BR: { lat: -14.2350, lng: -51.9253, zoom: 4 },
+                BR: { lat: -14.235, lng: -51.9253, zoom: 4 },
                 JP: { lat: 36.2048, lng: 138.2529, zoom: 5 },
                 CN: { lat: 35.8617, lng: 104.1954, zoom: 4 },
                 MX: { lat: 23.6345, lng: -102.5528, zoom: 5 },
@@ -420,21 +420,73 @@
                 CO: { lat: 4.5709, lng: -74.2973, zoom: 5 },
             };
 
-            // Determine initial center from country restriction
-            var center = { lat: 20, lng: 0 }; // World center fallback
-            var initZoom = 2;
-
+            // Get country fallback center (used only if geolocation fails)
+            var countryfallback = { lat: 20, lng: 0, zoom: 2 };
             if (config.component_restrictions && config.component_restrictions.country) {
                 var restricted = config.component_restrictions.country;
                 var code = Array.isArray(restricted) ? restricted[0] : restricted;
                 code = (code || '').toUpperCase();
                 if (countryCenters[code]) {
-                    center = { lat: countryCenters[code].lat, lng: countryCenters[code].lng };
-                    initZoom = countryCenters[code].zoom;
+                    countryfallback = countryCenters[code];
                 }
             }
 
-            // Initialize map immediately
+            // Start with country fallback — geolocation will override once ready
+            var center = { lat: countryfallback.lat, lng: countryfallback.lng };
+            var initZoom = countryfallback.zoom;
+
+            // Try to get user's actual location and update the map
+            function locateUser() {
+                // Priority 1: Browser geolocation (GPS/WiFi — exact location)
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function (pos) {
+                            var userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                            if (pickerMap) {
+                                pickerMap.setCenter(userLoc);
+                                pickerMap.setZoom(17);
+                            }
+                            if (pickerMarker) {
+                                pickerMarker.position = userLoc;
+                            }
+                        },
+                        function () {
+                            // Priority 2: IP-based geolocation via free API
+                            ipGeolocate();
+                        },
+                        { enableHighAccuracy: true, timeout: 8000, maximumAge: 300000 }
+                    );
+                } else {
+                    ipGeolocate();
+                }
+            }
+
+            function ipGeolocate() {
+                // Use a free IP geolocation service to get approximate location
+                try {
+                    fetch('https://ipapi.co/json/', { mode: 'cors' })
+                        .then(function (res) { return res.json(); })
+                        .then(function (data) {
+                            if (data && data.latitude && data.longitude) {
+                                var ipLoc = { lat: parseFloat(data.latitude), lng: parseFloat(data.longitude) };
+                                if (pickerMap) {
+                                    pickerMap.setCenter(ipLoc);
+                                    pickerMap.setZoom(14);
+                                }
+                                if (pickerMarker) {
+                                    pickerMarker.position = ipLoc;
+                                }
+                            }
+                        })
+                        .catch(function () {
+                            // Stays on country fallback — no action needed
+                        });
+                } catch (e) {
+                    // Stays on country fallback
+                }
+            }
+
+            // Initialize map immediately with country fallback, then locate user
             function initMap() {
                 pickerMap = new google.maps.Map(mapContainer, {
                     center: center,
@@ -451,6 +503,9 @@
                         position: center,
                         gmpDraggable: true,
                     });
+
+                    // Once marker is ready, try to locate the user
+                    locateUser();
 
                     // Drag marker to pick address
                     pickerMarker.addListener('dragend', function () {
