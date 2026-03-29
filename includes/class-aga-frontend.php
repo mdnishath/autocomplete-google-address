@@ -226,6 +226,9 @@ class AGA_Frontend {
         // Checkout abandonment tracking flag.
         $frontend_data['track_abandonment'] = aga_get_setting( 'track_abandonment' ) === '1';
 
+        // Map zoom level from Appearance settings (default 17).
+        $frontend_data['map_zoom'] = intval( aga_get_setting( 'map_zoom' ) ?: 17 );
+
         wp_localize_script( $this->plugin_name, 'aga_frontend_data', $frontend_data );
     }
 

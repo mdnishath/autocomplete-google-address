@@ -288,6 +288,19 @@ if ( ! empty( $current_api_key ) ) {
 
 						<hr />
 
+						<!-- Map Picker Appearance -->
+						<h3 class="aga-mt-md"><?php esc_html_e( 'Map Picker', 'autocomplete-google-address' ); ?></h3>
+						<div class="aga-appearance-grid">
+							<div class="aga-field-group">
+								<label for="aga_map_zoom"><strong><?php esc_html_e( 'Default Map Zoom Level', 'autocomplete-google-address' ); ?></strong></label>
+								<input type="range" id="aga_map_zoom" name="Nish_aga_settings[map_zoom]" value="<?php echo esc_attr( $options['map_zoom'] ?? '17' ); ?>" min="1" max="21" step="1" style="width: 200px; vertical-align: middle;" oninput="document.getElementById('aga_map_zoom_val').textContent = this.value" />
+								<span id="aga_map_zoom_val" style="font-weight: 600; margin-left: 8px;"><?php echo esc_html( $options['map_zoom'] ?? '17' ); ?></span>
+								<p class="description"><?php esc_html_e( 'Controls how zoomed-in the map appears when centered on user location. 1 = world, 10 = city, 15 = streets, 17 = buildings, 21 = max.', 'autocomplete-google-address' ); ?></p>
+							</div>
+						</div>
+
+						<hr />
+
 						<!-- Attribution Customization -->
 						<h3 class="aga-mt-md"><?php esc_html_e( 'Attribution Text', 'autocomplete-google-address' ); ?></h3>
 						<p class="description">

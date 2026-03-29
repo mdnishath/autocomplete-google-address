@@ -357,6 +357,9 @@
             var pickerMap = null;
             var pickerMarker = null;
 
+            // Read map zoom from global settings (default 17)
+            var mapZoom = (typeof aga_frontend_data !== 'undefined' && aga_frontend_data.map_zoom) ? parseInt(aga_frontend_data.map_zoom, 10) : 17;
+
             // Store references on config so selectPlace can update the map
             config._mapPicker = {
                 getMap: function () { return pickerMap; },
@@ -364,7 +367,7 @@
                 centerOn: function (latLng) {
                     if (pickerMap) {
                         pickerMap.setCenter(latLng);
-                        pickerMap.setZoom(16);
+                        pickerMap.setZoom(mapZoom);
                     }
                     if (pickerMarker) {
                         pickerMarker.position = latLng;
@@ -444,7 +447,7 @@
                             var userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                             if (pickerMap) {
                                 pickerMap.setCenter(userLoc);
-                                pickerMap.setZoom(17);
+                                pickerMap.setZoom(mapZoom);
                             }
                             if (pickerMarker) {
                                 pickerMarker.position = userLoc;

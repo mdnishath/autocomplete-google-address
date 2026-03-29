@@ -111,7 +111,7 @@ class AGA_Settings {
         $appearance_keys = array(
             'dropdown_bg_color', 'dropdown_text_color', 'dropdown_hover_color',
             'dropdown_border_color', 'dropdown_border_radius', 'dropdown_font_size',
-            'dropdown_max_height',
+            'dropdown_max_height', 'map_zoom',
             'attribution_text', 'attribution_text_color', 'attribution_bg_color',
             'attribution_font_size',
         );
