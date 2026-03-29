@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://wordpress.org/plugins/autocomplete-google-address/"><img src="https://img.shields.io/badge/version-5.2.0-blue?style=for-the-badge&logo=wordpress&logoColor=white" alt="Version 5.2.0"></a>
+  <a href="https://wordpress.org/plugins/autocomplete-google-address/"><img src="https://img.shields.io/badge/version-5.2.1-blue?style=for-the-badge&logo=wordpress&logoColor=white" alt="Version 5.2.1"></a>
   <a href="https://wordpress.org/plugins/autocomplete-google-address/"><img src="https://img.shields.io/badge/WordPress-6.0%2B-21759B?style=for-the-badge&logo=wordpress&logoColor=white" alt="WordPress 6.0+"></a>
   <a href="https://www.php.net/"><img src="https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 7.4+"></a>
   <a href="https://www.gnu.org/licenses/gpl-2.0.html"><img src="https://img.shields.io/badge/license-GPL--2.0--or--later-green?style=for-the-badge" alt="License GPL-2.0-or-later"></a>
@@ -191,10 +191,18 @@ Use the `[aga_autocomplete]` shortcode to embed an autocomplete field anywhere:
 
 ## 📋 Changelog
 
-### v5.2.0 — Major Feature Release (Latest)
+### v5.2.1 — Map Picker GPS + Zoom Control (Latest)
+
+- 🗺️ **Map Picker GPS** — Map now centers on user's real GPS location (zoom 17) instead of country center
+- 🌐 **IP Fallback** — If GPS denied, uses IP-based geolocation for approximate location (zoom 14)
+- 🔍 **Map Zoom Control** — Configurable default zoom level (1-21) in Settings > Appearance
+- 🐛 **Fix:** Disabled select fields display cleanly for free users
+- 🐛 **Fix:** Freemius Pro detection corrected
+
+### v5.2.0 — Major Feature Release
 
 **New Features:**
-- 🗺️ **Map Picker** — Interactive map below address input. Click or drag pin to pick address. Auto-centers on restricted country.
+- 🗺️ **Map Picker** — Interactive map below address input. Click or drag pin to pick address. No typing needed. Works with ALL form plugins.
 - ⚠️ **PO Box Detection** — Visual warning when PO Box / APO / Military addresses are detected
 - 🔗 **Fluent Forms** — New preset integration for Fluent Forms
 - 🥷 **Ninja Forms** — New preset integration for Ninja Forms

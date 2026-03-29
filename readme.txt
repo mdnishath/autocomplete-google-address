@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google, maps, places, autocomplete, address, form, woocommerce, contact form 7, wpforms, gravity forms, elementor, checkout, address autocomplete
 Requires at least: 5.4
 Tested up to: 6.9
-Stable tag: 5.2.0
+Stable tag: 5.2.1
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -46,11 +46,11 @@ Our **Setup Wizard** guides you through the entire process. No documentation nee
 
 = Pro Features =
 
+* **Map Picker (NEW)** — Interactive Google Map appears below the address input. Users can click anywhere on the map or drag the pin to pick their exact address — no typing needed. The map auto-centers on the user's real GPS location (zoom level 17 by default, configurable in Settings > Appearance). If GPS is unavailable, it falls back to IP-based geolocation, then to country center. After picking, all address fields (street, city, state, zip, country) fill automatically via reverse geocoding. Works with WooCommerce, Contact Form 7, WPForms, Gravity Forms, Elementor, Fluent Forms, Ninja Forms, and any custom form.
 * **Smart Mapping Mode** — One field triggers autocomplete, then automatically fills Street, City, State/District, Zip, and Country into separate fields
-* **WooCommerce Auto-Integration** — Zero configuration needed. Automatically adds autocomplete to billing and shipping address fields on checkout. Works with both Classic and Block Checkout
-* **One-Click Form Presets** — Pre-built selector templates for Contact Form 7, WPForms, Gravity Forms, and Elementor Pro Forms. Just click "Apply Preset" and customize your field IDs
-* **Draggable Map Preview** — Shows a Google Map with a draggable pin after address selection. Drag the pin to fine-tune the location and all fields update automatically
-* **Multiple Country Restrictions** — Limit autocomplete results to one or more countries
+* **WooCommerce Auto-Integration** — Zero configuration needed. Setup Wizard auto-detects WooCommerce, creates billing + shipping configs, detects Classic vs Block checkout. Configure Map Picker, Geolocation, Address Validation, and Saved Addresses right in the wizard.
+* **One-Click Form Presets** — Pre-built selector templates for Contact Form 7, WPForms, Gravity Forms, Elementor Pro Forms, Fluent Forms, and Ninja Forms
+* **Multiple Country Restrictions** — Limit autocomplete results to one or more countries. Map Picker auto-centers on the restricted country.
 * **Per-Form Language Override** — Set different languages for different forms
 * **Per-Page Activation** — Load autocomplete only on specific pages
 * **Smart Select Matching** — Automatically matches state/district/province names to WooCommerce dropdown values for every country (US states, Bangladesh districts, Indian states, UK counties, etc.)
@@ -58,15 +58,22 @@ Our **Setup Wizard** guides you through the entire process. No documentation nee
 * **Address Validation** — Verify addresses with green/yellow/red badges using Google Address Validation API
 * **Geolocation Auto-Detect** — "Use My Location" GPS button on the address input
 * **Saved Addresses** — Show recently used addresses for logged-in users (up to 5 per user)
-* **Usage Analytics Dashboard** — Track searches, selections, conversion rate, top countries/cities
+* **PO Box Detection** — Automatic warning when PO Box, APO, FPO, or military addresses are entered
+* **Address Verification Webhook** — Send real-time alerts to Slack, Zapier, or any URL when invalid addresses are submitted
+* **Checkout Abandonment Tracking** — Track users who type an address but don't complete checkout. Events appear in Analytics.
+* **White Label Mode** — Custom admin menu name for agencies and developers
+* **REST API** — /wp-json/aga/v1/config and /wp-json/aga/v1/validate endpoints for headless React/Next.js storefronts
+* **Usage Analytics Dashboard** — Track searches, selections, abandonment rate, top countries/cities
 * **Place Type Filter** — Restrict results to addresses, cities, businesses, or regions
-* **Custom Dropdown Styling** — Customize dropdown colors, fonts, border radius from admin
-* **Elementor Widget** — Native drag-and-drop widget for Elementor page builder
-* **Elementor Form Field** — Address Autocomplete field type for Elementor Pro Forms with smart mapping sub-fields
+* **Custom Dropdown Styling** — Customize dropdown colors, fonts, border radius, and map zoom level from admin
+* **Elementor Widget** — Native drag-and-drop widget with Map Picker, Geolocation, Address Validation, and Saved Addresses
+* **Elementor Form Field** — Address Autocomplete field type for Elementor Pro Forms with all Pro features
+* **Dark Mode** — Autocomplete dropdown adapts to user's dark mode preference
+* **RTL Support** — Full right-to-left language support for Arabic, Hebrew, and more
+* **ARIA Accessibility** — Screen reader support with proper listbox/combobox roles
 * **Country Restriction Dropdown** — Select2 multi-select with all countries (max 5)
 * **Language Selector** — Select2 dropdown with 80+ languages
-* **Smart Country-Aware Mapping** — Automatically maps city/state correctly for 30+ countries (Bangladesh districts, UK postal towns, Brazil admin areas, etc.)
-* **Zero-Config WooCommerce** — Auto-detects classic vs block checkout, re-initializes on AJAX updates
+* **Smart Country-Aware Mapping** — Automatically maps city/state correctly for 30+ countries
 * **Priority Support** — Direct WhatsApp support from the developer
 
 = Works With =
@@ -76,8 +83,9 @@ Our **Setup Wizard** guides you through the entire process. No documentation nee
 * WPForms
 * Gravity Forms
 * Elementor Pro Forms
-* Formidable Forms
+* Fluent Forms
 * Ninja Forms
+* Formidable Forms
 * Any HTML form with standard inputs
 
 = How It Works =
@@ -219,6 +227,14 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 8. Form Presets — One-click setup for popular form plugins
 
 == Changelog ==
+
+= 5.2.1 =
+* IMPROVED: Map Picker now uses real GPS geolocation to center on user's exact location (zoom 17) instead of country center.
+* IMPROVED: If GPS is denied/unavailable, Map Picker falls back to IP-based geolocation (zoom 14) for approximate location.
+* IMPROVED: If IP geolocation also fails, falls back to country restriction center as last resort.
+* NEW: Configurable Map Zoom Level in Settings > Appearance (range 1-21, default 17).
+* FIX: Disabled Select2/select fields now display cleanly for free users (removed broken checkmark pattern).
+* FIX: Freemius is_premium flag corrected — Pro users no longer see "Download Pro Version" button.
 
 = 5.2.0 =
 * NEW: Map Picker — interactive map below address input. Users can click or drag the pin to pick an address. Replaces the old Map Preview with a unified, always-visible map experience (Pro).
