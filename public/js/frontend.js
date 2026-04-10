@@ -101,11 +101,17 @@
         },
 
         setupAutocomplete: function (config) {
-            var mainInput = document.querySelector(config.main_selector);
-            if (!mainInput) {
+            var mainInputs = document.querySelectorAll(config.main_selector);
+            if (!mainInputs.length) {
                 return;
             }
 
+            mainInputs.forEach(function (mainInput) {
+                aga._setupSingleInput(mainInput, config);
+            });
+        },
+
+        _setupSingleInput: function (mainInput, config) {
             // Skip if already initialized (prevents double-init on dynamic re-renders).
             if (mainInput.getAttribute('data-aga-init') === '1') {
                 return;
@@ -474,24 +480,14 @@
             }
 
             function ipGeolocate() {
-                try {
-                    fetch('https://ipapi.co/json/', { mode: 'cors' })
-                        .then(function (res) { return res.json(); })
-                        .then(function (data) {
-                            if (data && data.latitude && data.longitude) {
-                                showLocation(
-                                    { lat: parseFloat(data.latitude), lng: parseFloat(data.longitude) },
-                                    Math.min(mapZoom, 14)
-                                );
-                            } else {
-                                // IP lookup returned no coords — show country fallback
-                                showLocation(center, initZoom);
-                            }
-                        })
-                        .catch(function () {
-                            showLocation(center, initZoom);
-                        });
-                } catch (e) {
+                // Use server-side IP geolocation (passed via PHP to avoid CORS errors).
+                var ipGeo = (typeof aga_frontend_data !== 'undefined') && aga_frontend_data.ip_geo;
+                if (ipGeo && ipGeo.lat && ipGeo.lng) {
+                    showLocation(
+                        { lat: parseFloat(ipGeo.lat), lng: parseFloat(ipGeo.lng) },
+                        Math.min(mapZoom, 14)
+                    );
+                } else {
                     showLocation(center, initZoom);
                 }
             }
@@ -644,19 +640,30 @@
 
         positionDropdown: function (dropdown, mainInput) {
             var inputRect = mainInput.getBoundingClientRect();
-            var spaceBelow = window.innerHeight - inputRect.bottom;
             var dropdownHeight = 250;
 
             dropdown.style.left = mainInput.offsetLeft + 'px';
             dropdown.style.width = mainInput.offsetWidth + 'px';
 
-            if (spaceBelow < dropdownHeight && inputRect.top > dropdownHeight) {
+            // Check if input is inside a popup/modal/overlay.
+            // Inside modals, always show below — the modal can scroll to accommodate.
+            var isInsideModal = aga._isInsideModal(mainInput);
+            var showAbove = false;
+
+            if (!isInsideModal) {
+                var spaceBelow = window.innerHeight - inputRect.bottom;
+                if (spaceBelow < dropdownHeight && inputRect.top > dropdownHeight) {
+                    showAbove = true;
+                }
+            }
+
+            if (showAbove) {
                 // Show above the input
                 dropdown.style.top = 'auto';
                 dropdown.style.bottom = (mainInput.parentNode.offsetHeight - mainInput.offsetTop) + 'px';
                 dropdown.classList.add('aga-dropdown-above');
             } else {
-                // Show below the input
+                // Show below the input (default)
                 dropdown.style.top = (mainInput.offsetTop + mainInput.offsetHeight) + 'px';
                 dropdown.style.bottom = 'auto';
                 dropdown.classList.remove('aga-dropdown-above');
@@ -734,7 +741,7 @@
                         aga.removePOBoxWarning(mainInput);
                     }
 
-                    aga.applyMapping(place, config);
+                    aga.applyMapping(place, config, mainInput);
 
                     if (config.map_picker && place.location) {
                         aga.centerMapPicker(place.location, config);
@@ -798,7 +805,7 @@
                             }) : []
                         };
 
-                        aga.applyMapping(placeObj, config);
+                        aga.applyMapping(placeObj, config, mainInput);
 
                         if (config.map_picker && placeObj.location) {
                             aga.centerMapPicker(placeObj.location, config);
@@ -950,16 +957,16 @@
                     }
 
                     // Update lat/lng with exact drop position
-                    aga.updateLatLngFields(location, config);
+                    aga.updateLatLngFields(location, config, mainInput);
 
                     if (config.selectors.place_id) {
-                        aga.setFieldValue(config.selectors.place_id, result.place_id);
+                        aga.setFieldValue(config.selectors.place_id, result.place_id, undefined, mainInput);
                     }
 
                     // Update smart mapping fields
                     if (config.mode === 'smart_mapping' && result.address_components) {
                         var components = aga.parseReverseComponents(result.address_components);
-                        aga.applyParsedComponents(components, config);
+                        aga.applyParsedComponents(components, config, mainInput);
                     }
 
                     // Re-validate after drag
@@ -971,7 +978,7 @@
                 } else {
                     // Geocoding API not enabled — just update coordinates
                     console.warn('Autocomplete Google Address: Geocoding failed (' + status + '). Enable the Geocoding API in Google Cloud Console for drag-to-update.');
-                    aga.updateLatLngFields(location, config);
+                    aga.updateLatLngFields(location, config, mainInput);
                     mainInput.value = lat.toFixed(6) + ', ' + lng.toFixed(6);
                     mainInput.dispatchEvent(new Event('change', { bubbles: true }));
                     setTimeout(function () { mainInput.removeAttribute('data-aga-suppress'); }, 300);
@@ -1010,17 +1017,17 @@
             return parsed;
         },
 
-        applyParsedComponents: function (components, config) {
+        applyParsedComponents: function (components, config, mainInput) {
             if (config.selectors.country) {
                 var countryPrimary = (config.formats && config.formats.country === 'short') ? components.country_short : components.country_long;
                 var countryAlt = (config.formats && config.formats.country === 'short') ? components.country_long : components.country_short;
-                aga.setFieldValue(config.selectors.country, countryPrimary, countryAlt);
+                aga.setFieldValue(config.selectors.country, countryPrimary, countryAlt, mainInput);
             }
             if (config.selectors.street) {
-                aga.setFieldValue(config.selectors.street, (components.street_number + ' ' + components.route).trim());
+                aga.setFieldValue(config.selectors.street, (components.street_number + ' ' + components.route).trim(), undefined, mainInput);
             }
             if (config.selectors.city) {
-                aga.setFieldValue(config.selectors.city, components.locality || components.sublocality || components.administrative_area_level_2 || '');
+                aga.setFieldValue(config.selectors.city, components.locality || components.sublocality || components.administrative_area_level_2 || '', undefined, mainInput);
             }
 
             var statePrimary = (config.formats && config.formats.state === 'short') ? components.administrative_area_level_1_short : components.administrative_area_level_1_long;
@@ -1029,22 +1036,22 @@
 
             setTimeout(function () {
                 if (config.selectors.state) {
-                    aga.setFieldValue(config.selectors.state, statePrimary, stateAlt);
+                    aga.setFieldValue(config.selectors.state, statePrimary, stateAlt, mainInput);
                 }
                 if (config.selectors.zip) {
-                    aga.setFieldValue(config.selectors.zip, zipValue);
+                    aga.setFieldValue(config.selectors.zip, zipValue, undefined, mainInput);
                 }
             }, 500);
         },
 
-        updateLatLngFields: function (latLng, config) {
+        updateLatLngFields: function (latLng, config, mainInput) {
             var lat = typeof latLng.lat === 'function' ? latLng.lat() : latLng.lat;
             var lng = typeof latLng.lng === 'function' ? latLng.lng() : latLng.lng;
             if (config.selectors.lat) {
-                aga.setFieldValue(config.selectors.lat, lat);
+                aga.setFieldValue(config.selectors.lat, lat, undefined, mainInput);
             }
             if (config.selectors.lng) {
-                aga.setFieldValue(config.selectors.lng, lng);
+                aga.setFieldValue(config.selectors.lng, lng, undefined, mainInput);
             }
         },
 
@@ -1053,6 +1060,46 @@
                 item.classList.toggle('aga-autocomplete-item--active', i === index);
                 item.setAttribute('aria-selected', i === index ? 'true' : 'false');
             });
+        },
+
+        _getScrollParent: function (el) {
+            var node = el.parentNode;
+            while (node && node !== document.body && node !== document.documentElement) {
+                var style = window.getComputedStyle(node);
+                var overflow = style.overflow + style.overflowY;
+                if (/(auto|scroll)/.test(overflow)) {
+                    return node;
+                }
+                node = node.parentNode;
+            }
+            return null;
+        },
+
+        _isInsideModal: function (el) {
+            var node = el.parentNode;
+            while (node && node !== document.body) {
+                var style = window.getComputedStyle(node);
+                // Detect fixed/absolute positioned overlays (popups, modals)
+                if (style.position === 'fixed' || style.position === 'absolute') {
+                    // Check common modal selectors and z-index > 0 as heuristic
+                    var zIndex = parseInt(style.zIndex, 10);
+                    if (zIndex > 0) return true;
+                }
+                // Check common popup/modal class names and roles
+                if (node.getAttribute('role') === 'dialog' ||
+                    node.classList.contains('modal') ||
+                    node.classList.contains('popup') ||
+                    node.classList.contains('overlay') ||
+                    node.classList.contains('lightbox') ||
+                    node.classList.contains('fancybox-content') ||
+                    node.classList.contains('elementor-popup-modal') ||
+                    node.classList.contains('jet-popup') ||
+                    node.classList.contains('wpforms-container') && style.position === 'fixed') {
+                    return true;
+                }
+                node = node.parentNode;
+            }
+            return false;
         },
 
         hideDropdown: function (dropdown) {
@@ -1068,15 +1115,15 @@
             }
         },
 
-        applyMapping: function (place, config) {
+        applyMapping: function (place, config, mainInput) {
             if (config.selectors.lat && place.location) {
-                aga.setFieldValue(config.selectors.lat, place.location.lat());
+                aga.setFieldValue(config.selectors.lat, place.location.lat(), undefined, mainInput);
             }
             if (config.selectors.lng && place.location) {
-                aga.setFieldValue(config.selectors.lng, place.location.lng());
+                aga.setFieldValue(config.selectors.lng, place.location.lng(), undefined, mainInput);
             }
             if (config.selectors.place_id) {
-                aga.setFieldValue(config.selectors.place_id, place.id);
+                aga.setFieldValue(config.selectors.place_id, place.id, undefined, mainInput);
             }
 
             if (config.mode === 'smart_mapping' && place.addressComponents) {
@@ -1089,17 +1136,17 @@
                     var fmt = config.formats || {};
                     var countryPrimary = (fmt.country === 'short') ? components.country_short : components.country_long;
                     var countryAlt = (fmt.country === 'short') ? components.country_long : components.country_short;
-                    aga.setFieldValue(config.selectors.country, countryPrimary, countryAlt);
+                    aga.setFieldValue(config.selectors.country, countryPrimary, countryAlt, mainInput);
                 }
 
                 if (config.selectors.street) {
-                    aga.setFieldValue(config.selectors.street, (components.street_number + ' ' + components.route).trim());
+                    aga.setFieldValue(config.selectors.street, (components.street_number + ' ' + components.route).trim(), undefined, mainInput);
                 }
 
                 // Smart country-aware city mapping
                 if (config.selectors.city) {
                     var smartCity = aga.getSmartCity(components, countryCode);
-                    aga.setFieldValue(config.selectors.city, smartCity);
+                    aga.setFieldValue(config.selectors.city, smartCity, undefined, mainInput);
                 }
 
                 // Smart country-aware state mapping
@@ -1109,10 +1156,10 @@
                 // Delay state and postcode to allow framework re-render after country change.
                 setTimeout(function () {
                     if (config.selectors.state) {
-                        aga.setFieldValue(config.selectors.state, smartState.primary, smartState.alt);
+                        aga.setFieldValue(config.selectors.state, smartState.primary, smartState.alt, mainInput);
                     }
                     if (config.selectors.zip) {
-                        aga.setFieldValue(config.selectors.zip, zipValue);
+                        aga.setFieldValue(config.selectors.zip, zipValue, undefined, mainInput);
                     }
                 }, 500);
             }
@@ -1120,9 +1167,10 @@
 
         _warnedSelectors: {},
 
-        setFieldValue: function (selector, value, altValue) {
+        setFieldValue: function (selector, value, altValue, context) {
             if (!selector || value === undefined) return;
-            var field = document.querySelector(selector);
+            var scope = context ? (context.closest('form') || context.closest('.wpcf7-form, .wpforms-form, .gform_wrapper, .elementor-form, .frm_forms') || document) : document;
+            var field = scope.querySelector(selector);
             if (!field) {
                 if (!aga._warnedSelectors[selector]) {
                     aga._warnedSelectors[selector] = true;
@@ -1306,7 +1354,7 @@
                         addressComponents: entry.components || []
                     };
 
-                    aga.applyMapping(placeObj, config);
+                    aga.applyMapping(placeObj, config, mainInput);
 
                     if (config.map_picker && location) {
                         aga.centerMapPicker(location, config);
@@ -1689,9 +1737,30 @@
         _originalRun.call(aga);
     };
 
+    // MutationObserver: auto-init autocomplete on dynamically added content
+    // (popups, modals, overlays, AJAX-loaded forms).
+    var _reinitTimer = null;
+    function observeDynamicContent() {
+        if (typeof MutationObserver === 'undefined') return;
+        var observer = new MutationObserver(function (mutations) {
+            for (var i = 0; i < mutations.length; i++) {
+                if (mutations[i].addedNodes.length) {
+                    // Debounce to avoid excessive reinit calls
+                    if (_reinitTimer) clearTimeout(_reinitTimer);
+                    _reinitTimer = setTimeout(function () {
+                        window.aga_reinit();
+                    }, 200);
+                    break;
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
     $(function () {
         scanDataConfigs();
         aga.init();
+        observeDynamicContent();
     });
 
 })(jQuery);
