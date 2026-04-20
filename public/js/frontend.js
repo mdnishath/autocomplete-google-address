@@ -131,7 +131,7 @@
             wrapper.appendChild(dropdown);
 
             var state = {
-                sessionToken: aga.useNewAPI ? new google.maps.places.AutocompleteSessionToken() : null,
+                sessionToken: null,
                 debounceTimer: null,
                 activeIndex: -1,
                 isSelecting: false,
@@ -546,7 +546,12 @@
             aga.showLoading(dropdown, mainInput);
 
             if (aga.useNewAPI) {
-                // New Places API
+                // New Places API — create token lazily using the currently loaded class reference.
+                // Why: if Google Maps API is loaded twice (by another plugin), the class identity changes
+                // and a token created earlier throws "not an instance of AutocompleteSessionToken".
+                if (!state.sessionToken || !(state.sessionToken instanceof google.maps.places.AutocompleteSessionToken)) {
+                    state.sessionToken = new google.maps.places.AutocompleteSessionToken();
+                }
                 var request = {
                     input: query,
                     sessionToken: state.sessionToken

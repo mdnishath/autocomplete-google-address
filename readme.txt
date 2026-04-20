@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google address autocomplete, woocommerce address, address validation, map picker, checkout autocomplete
 Requires at least: 5.4
 Tested up to: 6.9
-Stable tag: 5.3.2
+Stable tag: 5.3.3
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -289,6 +289,9 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 10. Analytics Dashboard -- Track searches, selections, and abandonment.
 
 == Changelog ==
+
+= 5.3.3 =
+* FIX: Autocomplete now works when Google Maps JavaScript API is loaded twice on the same page (e.g. by another plugin or theme). Resolves "sessionToken: not an instance of AutocompleteSessionToken" error on WooCommerce checkout and other pages with conflicting Maps scripts.
 
 = 5.3.2 =
 * FIX: Autocomplete now works on duplicate forms -- when the same form appears twice on a page, both instances get autocomplete.
