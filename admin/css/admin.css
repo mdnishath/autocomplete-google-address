@@ -2090,3 +2090,613 @@ input:focus + .aga-slider {
         height: 24px;
     }
 }
+
+
+/* ==========================================================================
+   22. Visual Selector Tool
+   ========================================================================== */
+
+/* Pick button next to selector inputs */
+.aga-vst-pick-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 36px;
+    height: 38px;
+    padding: 0 10px;
+    margin-left: var(--aga-space-sm);
+    border: 2px solid var(--aga-primary);
+    border-radius: var(--aga-radius-sm);
+    background: var(--aga-primary-light);
+    color: var(--aga-primary);
+    cursor: pointer;
+    transition: all var(--aga-transition);
+    flex-shrink: 0;
+    vertical-align: middle;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--aga-font);
+    white-space: nowrap;
+}
+
+.aga-vst-pick-btn:hover {
+    background: var(--aga-primary);
+    color: #fff;
+    border-color: var(--aga-primary);
+    box-shadow: var(--aga-shadow-md);
+    transform: translateY(-1px);
+}
+
+.aga-vst-pick-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--aga-shadow-sm);
+}
+
+.aga-vst-pick-btn .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+}
+
+/* Hide label text on small smart-mapping grid buttons, show only icon */
+.aga-mapping-grid .aga-vst-pick-btn .aga-vst-pick-label {
+    display: none;
+}
+
+.aga-vst-input-row {
+    display: flex;
+    align-items: center;
+}
+
+.aga-vst-input-row input.widefat {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Body lock when modal is open */
+body.aga-vst-open {
+    overflow: hidden;
+}
+
+/* Modal overlay */
+.aga-vst-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999999;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: 20px;
+}
+
+.aga-vst-modal-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1400px;
+    background: var(--aga-bg-card);
+    border-radius: var(--aga-radius-lg);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+/* Header */
+.aga-vst-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--aga-space-md) var(--aga-space-lg);
+    background: var(--aga-bg);
+    border-bottom: 1px solid var(--aga-border);
+    gap: var(--aga-space-md);
+    flex-shrink: 0;
+}
+
+.aga-vst-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--aga-space-sm);
+}
+
+.aga-vst-header-left .dashicons {
+    color: var(--aga-primary);
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+}
+
+.aga-vst-header-left h3 {
+    margin: 0;
+    font-size: var(--aga-font-size-lg);
+    font-weight: 600;
+    color: var(--aga-text);
+    white-space: nowrap;
+}
+
+.aga-vst-header-center {
+    display: flex;
+    align-items: center;
+    gap: var(--aga-space-sm);
+    flex: 1;
+    justify-content: center;
+}
+
+.aga-vst-header-center .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 28px;
+}
+
+/* Filter tabs */
+.aga-vst-filter-tabs {
+    display: flex;
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-sm);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.aga-vst-filter {
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--aga-font);
+    border: none;
+    background: var(--aga-bg-card);
+    color: var(--aga-text-secondary);
+    cursor: pointer;
+    transition: all var(--aga-transition);
+    white-space: nowrap;
+}
+
+.aga-vst-filter:not(:last-child) {
+    border-right: 1px solid var(--aga-border);
+}
+
+.aga-vst-filter:hover {
+    background: var(--aga-bg);
+    color: var(--aga-text);
+}
+
+.aga-vst-filter.active {
+    background: var(--aga-primary);
+    color: #fff;
+}
+
+/* Page search input */
+.aga-vst-page-search-wrap {
+    position: relative;
+    flex: 1;
+    max-width: 420px;
+}
+
+.aga-vst-search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--aga-text-muted);
+    pointer-events: none;
+    z-index: 1;
+}
+
+#aga-vst-page-search {
+    width: 100%;
+    padding: 6px 12px 6px 32px;
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-sm);
+    font-size: var(--aga-font-size-sm);
+    font-family: var(--aga-font);
+    background: var(--aga-bg-card);
+    outline: none;
+    transition: border-color var(--aga-transition), box-shadow var(--aga-transition);
+}
+
+#aga-vst-page-search:focus {
+    border-color: var(--aga-primary);
+    box-shadow: 0 0 0 3px rgba(var(--aga-primary-rgb), 0.12);
+}
+
+#aga-vst-page-search::placeholder {
+    color: var(--aga-text-muted);
+}
+
+/* Page info label */
+.aga-vst-page-info {
+    font-size: var(--aga-font-size-xs);
+    color: var(--aga-text-muted);
+    white-space: nowrap;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Page dropdown */
+.aga-vst-page-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: var(--aga-bg-card);
+    border: 1px solid var(--aga-border);
+    border-radius: var(--aga-radius-md);
+    box-shadow: var(--aga-shadow-lg);
+    z-index: 999999;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.aga-vst-dd-item {
+    display: flex;
+    align-items: center;
+    gap: var(--aga-space-sm);
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background var(--aga-transition);
+    font-size: var(--aga-font-size-sm);
+}
+
+.aga-vst-dd-item:hover {
+    background: var(--aga-primary-light);
+}
+
+.aga-vst-dd-item.aga-vst-dd-pinned {
+    font-weight: 600;
+}
+
+.aga-vst-dd-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+}
+
+.aga-vst-dd-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.aga-vst-dd-badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: var(--aga-radius-full);
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
+}
+
+.aga-vst-dd-badge--home {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.aga-vst-dd-badge--woo {
+    background: #f3e8ff;
+    color: #7c3aed;
+}
+
+.aga-vst-dd-badge--page {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.aga-vst-dd-badge--post {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.aga-vst-dd-divider {
+    height: 1px;
+    background: var(--aga-border);
+    margin: 2px 0;
+}
+
+.aga-vst-dd-loading,
+.aga-vst-dd-empty {
+    padding: 12px;
+    text-align: center;
+    color: var(--aga-text-muted);
+    font-size: var(--aga-font-size-sm);
+}
+
+.aga-vst-dd-load-more {
+    padding: 8px 12px;
+    text-align: center;
+    color: var(--aga-primary);
+    font-size: var(--aga-font-size-xs);
+    font-weight: 600;
+    cursor: pointer;
+    border-top: 1px solid var(--aga-border);
+    transition: background var(--aga-transition);
+}
+
+.aga-vst-dd-load-more:hover {
+    background: var(--aga-primary-light);
+}
+
+.aga-vst-dd-info {
+    padding: 6px 12px;
+    text-align: center;
+    color: var(--aga-text-muted);
+    font-size: var(--aga-font-size-xs);
+    border-top: 1px solid var(--aga-border);
+}
+
+.aga-vst-header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--aga-space-md);
+}
+
+.aga-vst-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--aga-text-secondary);
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color var(--aga-transition);
+}
+
+.aga-vst-close:hover {
+    color: var(--aga-danger);
+}
+
+/* Instructions bar */
+.aga-vst-instructions {
+    display: flex;
+    align-items: center;
+    gap: var(--aga-space-sm);
+    padding: var(--aga-space-sm) var(--aga-space-lg);
+    background: var(--aga-primary-light);
+    color: var(--aga-primary);
+    font-size: var(--aga-font-size-sm);
+    border-bottom: 1px solid var(--aga-border);
+    flex-shrink: 0;
+}
+
+.aga-vst-instructions svg {
+    flex-shrink: 0;
+}
+
+/* Body / iframe area */
+.aga-vst-body {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+}
+
+#aga-vst-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+.aga-vst-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--aga-bg);
+    gap: var(--aga-space-sm);
+}
+
+.aga-vst-loading .spinner {
+    float: none;
+    margin: 0;
+}
+
+.aga-vst-loading p {
+    margin: 0;
+    color: var(--aga-text-secondary);
+    font-size: var(--aga-font-size-sm);
+}
+
+/* Selector options panel */
+.aga-vst-selector-panel {
+    flex-shrink: 0;
+    border-top: 2px solid var(--aga-primary);
+    background: var(--aga-bg);
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.aga-vst-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--aga-space-sm) var(--aga-space-lg);
+    border-bottom: 1px solid var(--aga-border);
+}
+
+.aga-vst-panel-title {
+    font-weight: 600;
+    font-size: var(--aga-font-size-sm);
+    color: var(--aga-text);
+}
+
+.aga-vst-panel-element {
+    font-size: var(--aga-font-size-xs);
+    color: var(--aga-text-muted);
+    font-family: monospace;
+}
+
+.aga-vst-options {
+    display: flex;
+    gap: var(--aga-space-sm);
+    padding: var(--aga-space-sm) var(--aga-space-lg);
+    overflow-x: auto;
+}
+
+.aga-vst-option {
+    flex: 0 0 auto;
+    min-width: 180px;
+    max-width: 320px;
+    padding: var(--aga-space-sm) var(--aga-space-md);
+    border: 2px solid var(--aga-border);
+    border-radius: var(--aga-radius-md);
+    background: var(--aga-bg-card);
+    cursor: pointer;
+    transition: all var(--aga-transition);
+}
+
+.aga-vst-option:hover {
+    border-color: var(--aga-primary);
+    background: var(--aga-primary-light);
+}
+
+.aga-vst-option.selected {
+    border-color: var(--aga-primary);
+    background: var(--aga-primary-light);
+    box-shadow: 0 0 0 3px rgba(var(--aga-primary-rgb), 0.15);
+}
+
+.aga-vst-option-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.aga-vst-badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: var(--aga-radius-full);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aga-vst-badge--id {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.aga-vst-badge--name {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.aga-vst-badge--class {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.aga-vst-badge--placeholder {
+    background: #f3e8ff;
+    color: #7c3aed;
+}
+
+.aga-vst-badge--data {
+    background: #ffe4e6;
+    color: #be123c;
+}
+
+.aga-vst-badge--path {
+    background: var(--aga-border-light);
+    color: var(--aga-text-secondary);
+}
+
+.aga-vst-recommended {
+    font-size: 10px;
+    color: var(--aga-success);
+    font-weight: 600;
+}
+
+.aga-vst-option-code {
+    display: block;
+    padding: 4px 8px;
+    background: #1e293b;
+    color: #e2e8f0;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+    margin: 4px 0;
+    word-break: break-all;
+    white-space: normal;
+    line-height: 1.4;
+}
+
+.aga-vst-option.selected .aga-vst-option-code {
+    background: #1e293b;
+    color: #93c5fd;
+}
+
+.aga-vst-option-desc {
+    display: block;
+    font-size: 11px;
+    color: var(--aga-text-muted);
+    line-height: 1.3;
+}
+
+.aga-vst-no-options {
+    padding: var(--aga-space-md);
+    color: var(--aga-text-muted);
+    font-size: var(--aga-font-size-sm);
+    text-align: center;
+}
+
+/* Footer */
+.aga-vst-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--aga-space-md) var(--aga-space-lg);
+    background: var(--aga-bg);
+    border-top: 1px solid var(--aga-border);
+    flex-shrink: 0;
+}
+
+.aga-vst-footer-left {
+    font-size: var(--aga-font-size-sm);
+    color: var(--aga-text-secondary);
+}
+
+.aga-vst-footer-left strong {
+    color: var(--aga-primary);
+}
+
+.aga-vst-footer-right {
+    display: flex;
+    gap: var(--aga-space-sm);
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .aga-vst-modal {
+        padding: 0;
+    }
+
+    .aga-vst-modal-content {
+        border-radius: 0;
+    }
+
+    .aga-vst-header {
+        flex-wrap: wrap;
+    }
+
+    .aga-vst-header-center {
+        order: 3;
+        flex-basis: 100%;
+    }
+}

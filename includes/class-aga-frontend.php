@@ -59,6 +59,14 @@ class AGA_Frontend {
      */
     private static $gmaps_enqueued = false;
 
+    /**
+     * Count of configs already localized so the wp_footer fallback re-localizes
+     * only when new shortcode configs were appended after the wp_enqueue_scripts pass.
+     *
+     * @var int
+     */
+    private $localized_count = 0;
+
 
 	/**
 	 * Initialize the class and set its properties.
@@ -72,6 +80,22 @@ class AGA_Frontend {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 
+		// Visual Selector Tool iframe mode — hide admin bar and add helper styles.
+		if ( isset( $_GET['aga_vst'] ) && '1' === $_GET['aga_vst'] ) { // phpcs:ignore WordPress.Security.NonceVerification
+			add_filter( 'show_admin_bar', '__return_false' );
+			add_action( 'wp_head', array( $this, 'vst_iframe_styles' ) );
+		}
+	}
+
+	/**
+	 * Output minimal styles when page is loaded inside the Visual Selector Tool iframe.
+	 */
+	public function vst_iframe_styles() {
+		echo '<style id="aga-vst-iframe-styles">'
+			. 'html { margin-top: 0 !important; }'
+			. '#wpadminbar { display: none !important; }'
+			. 'body { cursor: crosshair !important; }'
+			. '</style>';
 	}
 
 	/**
@@ -189,11 +213,17 @@ class AGA_Frontend {
      * Localizes the form configuration data for the frontend script.
      */
     private function localize_script_data() {
+        // Skip if nothing new was added since the previous pass — wp_localize_script
+        // appends a duplicate <script> tag each time it's called, so we guard here.
+        if ( $this->localized_count === count( $this->forms_to_load ) && $this->localized_count > 0 ) {
+            return;
+        }
+
         $configs = array();
-        
+
         // Remove duplicates and ensure we have valid IDs.
         $this->forms_to_load = array_unique( array_map( 'absint', $this->forms_to_load ) );
-        
+
         foreach ( $this->forms_to_load as $form_id ) {
             $form_post = get_post( $form_id );
             if ( $form_post && 'aga_form' === $form_post->post_type ) {
@@ -229,7 +259,15 @@ class AGA_Frontend {
         // Map zoom level from Appearance settings (default 17).
         $frontend_data['map_zoom'] = intval( aga_get_setting( 'map_zoom' ) ?: 17 );
 
+        // Server-side IP geolocation (avoids CORS errors from client-side fetch).
+        $ip_geo = self::get_ip_geolocation();
+        if ( $ip_geo ) {
+            $frontend_data['ip_geo'] = $ip_geo;
+        }
+
         wp_localize_script( $this->plugin_name, 'aga_frontend_data', $frontend_data );
+
+        $this->localized_count = count( $this->forms_to_load );
     }
 
     /**
@@ -339,11 +377,238 @@ class AGA_Frontend {
         <?php
     }
 
+    /**
+     * Outputs inline JS in wp_footer that blocks WooCommerce checkout submission
+     * when the visitor selects an address in a country not in the store's allowed list.
+     */
+    public function output_checkout_blocklist_script() {
+        if ( ! function_exists( 'is_checkout' ) || ! is_checkout() ) {
+            return;
+        }
+        ?>
+        <script>
+        (function ($) {
+        'use strict';
+
+        function getMainAddressInput() {
+            return document.querySelector('input[role="combobox"][data-aga-init="1"]');
+        }
+
+        function isUnsupportedCountrySelected() {
+            var input = getMainAddressInput();
+            return !!(input && input._agaUnsupportedCountry);
+        }
+
+        function getUnsupportedCountryName() {
+            var input = getMainAddressInput();
+            return (input && input._agaUnsupportedCountryName)
+                ? input._agaUnsupportedCountryName
+                : 'this country/region';
+        }
+
+        function removeUnsupportedCountryNotice() {
+            $('.aga-checkout-country-error').remove();
+        }
+
+        function showUnsupportedCountryNotice() {
+            removeUnsupportedCountryNotice();
+
+            var message = 'Not verified — We currently do not ship to ' + getUnsupportedCountryName() + '.';
+
+            var $wrapper = $('.woocommerce-notices-wrapper').first();
+            if (!$wrapper.length) {
+                var $form = $('form.checkout');
+                if (!$form.length) return;
+
+                $wrapper = $('<div class="woocommerce-notices-wrapper"></div>');
+                $form.prepend($wrapper);
+            }
+
+            $wrapper.prepend(
+                $('<div class="woocommerce-error aga-checkout-country-error" role="alert"></div>').text(message)
+            );
+
+            $('html, body').animate({
+                scrollTop: $wrapper.offset().top - 120
+            }, 200);
+        }
+
+        function refreshPlaceOrderState() {
+            var $button = $('#place_order');
+            if (!$button.length) return;
+
+            if (!$button.data('aga-original-text')) {
+                $button.data('aga-original-text', $.trim($button.text()));
+            }
+            if (!$button.data('aga-original-value')) {
+                $button.data('aga-original-value', $button.val());
+            }
+
+            if (isUnsupportedCountrySelected()) {
+                var blockedText = 'Please select a supported address';
+                $button
+                    .prop('disabled', true)
+                    .attr('aria-disabled', 'true')
+                    .addClass('aga-place-order-disabled')
+                    .text(blockedText)
+                    .val(blockedText)
+                    .attr('data-value', blockedText);
+            } else {
+                var originalText = $button.data('aga-original-text') || 'Place order';
+                var originalValue = $button.data('aga-original-value') || originalText;
+                $button
+                    .prop('disabled', false)
+                    .removeAttr('aria-disabled')
+                    .removeClass('aga-place-order-disabled')
+                    .text(originalText)
+                    .val(originalValue)
+                    .attr('data-value', originalValue);
+
+                removeUnsupportedCountryNotice();
+            }
+        }
+
+        $(document.body).on('updated_checkout change', function () {
+            refreshPlaceOrderState();
+        });
+
+        $(document).on('click', '#place_order', function (e) {
+            if (isUnsupportedCountrySelected()) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                showUnsupportedCountryNotice();
+                refreshPlaceOrderState();
+                return false;
+            }
+        });
+
+        $(document).on('checkout_place_order', 'form.checkout', function () {
+            if (isUnsupportedCountrySelected()) {
+                showUnsupportedCountryNotice();
+                refreshPlaceOrderState();
+                return false;
+            }
+            return true;
+        });
+
+        $(function () {
+            refreshPlaceOrderState();
+        });
+
+        })(jQuery);
+        </script>
+        <?php
+    }
+
     public function add_async_attribute( $tag, $handle ) {
         if ( 'aga-google-maps' !== $handle ) {
             return $tag;
         }
         return str_replace( ' src', ' async src', $tag );
+    }
+
+    /**
+     * Outputs an HTML comment with the plugin's runtime state when ?aga_debug=1
+     * is present in the URL. Use this to view-source a page (logged-in vs
+     * logged-out / different browser / incognito) and compare what was actually
+     * detected and enqueued for that request.
+     *
+     * Note: if a page-caching plugin is serving cached HTML, the comment will
+     * reflect whatever state existed when the cache entry was generated — that
+     * is itself the diagnostic signal.
+     */
+    public function maybe_print_debug_comment() {
+        if ( empty( $_GET['aga_debug'] ) || '1' !== (string) $_GET['aga_debug'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            return;
+        }
+
+        $api_key  = aga_get_setting( 'api_key' );
+        $info = array(
+            'plugin_version'     => defined( 'AGA_VERSION' ) ? AGA_VERSION : 'unknown',
+            'is_user_logged_in'  => is_user_logged_in() ? 'yes' : 'no',
+            'queried_object_id'  => (int) get_queried_object_id(),
+            'forms_to_load'      => array_values( array_map( 'intval', (array) $this->forms_to_load ) ),
+            'gmaps_enqueued'     => self::$gmaps_enqueued ? 'yes' : 'no',
+            'main_script_done'   => wp_script_is( $this->plugin_name, 'done' ) ? 'yes' : 'no',
+            'main_script_queued' => wp_script_is( $this->plugin_name, 'enqueued' ) ? 'yes' : 'no',
+            'gmaps_script_done'  => wp_script_is( 'aga-google-maps', 'done' ) ? 'yes' : 'no',
+            'gmaps_script_queued'=> wp_script_is( 'aga-google-maps', 'enqueued' ) ? 'yes' : 'no',
+            'api_key_set'        => ! empty( $api_key ) ? 'yes' : 'no',
+            'is_checkout'        => ( function_exists( 'is_checkout' ) && is_checkout() ) ? 'yes' : 'no',
+            'should_load_filter' => apply_filters( 'aga_should_load_frontend', ! empty( $this->forms_to_load ) ) ? 'yes' : 'no',
+        );
+
+        echo "\n<!-- AGA-DEBUG " . esc_html( wp_json_encode( $info ) ) . " -->\n";
+    }
+
+    /**
+     * Server-side IP geolocation to avoid CORS errors from client-side fetch.
+     * Cached for 24 hours per visitor IP.
+     *
+     * @return array|null { lat: float, lng: float } or null on failure.
+     */
+    public static function get_ip_geolocation() {
+        $ip = self::get_visitor_ip();
+        if ( ! $ip || in_array( $ip, array( '127.0.0.1', '::1' ), true ) ) {
+            return null;
+        }
+
+        $cache_key = 'aga_ip_geo_' . md5( $ip );
+        $cached    = get_transient( $cache_key );
+        if ( false !== $cached ) {
+            return $cached;
+        }
+
+        $response = wp_remote_get( 'https://ipapi.co/' . $ip . '/json/', array(
+            'timeout'    => 3,
+            'user-agent' => 'AutocompleteGoogleAddress/' . AGA_VERSION,
+        ) );
+
+        if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+            // Cache the failure too so we don't retry on every page load.
+            set_transient( $cache_key, null, HOUR_IN_SECONDS );
+            return null;
+        }
+
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
+        if ( empty( $body['latitude'] ) || empty( $body['longitude'] ) ) {
+            set_transient( $cache_key, null, HOUR_IN_SECONDS );
+            return null;
+        }
+
+        $geo = array(
+            'lat' => (float) $body['latitude'],
+            'lng' => (float) $body['longitude'],
+        );
+
+        set_transient( $cache_key, $geo, DAY_IN_SECONDS );
+
+        return $geo;
+    }
+
+    /**
+     * Get the visitor's real IP address.
+     */
+    private static function get_visitor_ip() {
+        $headers = array(
+            'HTTP_CF_CONNECTING_IP', // Cloudflare
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_X_REAL_IP',
+            'REMOTE_ADDR',
+        );
+        foreach ( $headers as $header ) {
+            if ( ! empty( $_SERVER[ $header ] ) ) {
+                $ip = $_SERVER[ $header ];
+                // X-Forwarded-For can be comma-separated.
+                if ( strpos( $ip, ',' ) !== false ) {
+                    $ip = trim( explode( ',', $ip )[0] );
+                }
+                if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+                    return $ip;
+                }
+            }
+        }
+        return isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : null;
     }
 
 }

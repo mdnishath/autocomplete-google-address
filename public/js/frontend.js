@@ -46,7 +46,6 @@
     };
 
     var aga = {
-        _selectionId: 0,
 
         init: function () {
             if (typeof window.aga_form_configs === 'undefined' || window.aga_form_configs.length === 0) {
@@ -136,6 +135,7 @@
                 activeIndex: -1,
                 isSelecting: false,
                 isFetching: false,
+                selectionId: 0,
                 legacyService: aga.useNewAPI ? null : new google.maps.places.AutocompleteService()
             };
 
@@ -148,7 +148,7 @@
             mainInput.setAttribute('aria-expanded', 'false');
             mainInput.setAttribute('aria-haspopup', 'listbox');
 
-            mainInput.addEventListener('input', function () {
+            function triggerSearch() {
                 if (state.isSelecting) return;
                 if (mainInput.getAttribute('data-aga-suppress')) return;
 
@@ -166,6 +166,21 @@
                 state.debounceTimer = setTimeout(function () {
                     aga.fetchSuggestions(query, config, state, dropdown, mainInput);
                 }, 300);
+            }
+
+            mainInput.addEventListener('input', function () {
+                // On Android, skip during active composition (IME keyboards)
+                if (this.composing) return;
+                triggerSearch();
+            });
+
+            // Android IME: compositionend fires when the user confirms a word
+            mainInput.addEventListener('compositionstart', function () {
+                mainInput.composing = true;
+            });
+            mainInput.addEventListener('compositionend', function () {
+                mainInput.composing = false;
+                triggerSearch();
             });
 
             mainInput.addEventListener('keydown', function (e) {
@@ -695,15 +710,24 @@
                     aga.highlightItem(items, index);
                 });
 
-                // Use both click and touchend for iOS compatibility
+                // Use touchend for touch devices, click for mouse.
+                // Track _touched to prevent the synthetic click that fires after touchend.
+                var _touched = false;
                 var selectHandler = function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                     aga.selectPlace(prediction, mainInput, config, state);
                     aga.hideDropdown(dropdown);
                 };
-                li.addEventListener('click', selectHandler);
-                li.addEventListener('touchend', selectHandler);
+                li.addEventListener('touchend', function (e) {
+                    _touched = true;
+                    setTimeout(function () { _touched = false; }, 500);
+                    selectHandler(e);
+                });
+                li.addEventListener('click', function (e) {
+                    if (_touched) return; // already handled by touchend
+                    selectHandler(e);
+                });
 
                 dropdown.appendChild(li);
             });
@@ -725,18 +749,21 @@
 
         selectPlace: function (prediction, mainInput, config, state) {
             state.isSelecting = true;
-            var selectionId = ++aga._selectionId;
+            // Per-input selectionId prevents stale responses from one input
+            // from permanently locking another input's isSelecting flag.
+            var selectionId = ++state.selectionId;
 
             if (aga.useNewAPI && !prediction._legacy) {
                 // New Places API
                 var place = prediction.toPlace();
                 var fields = ['formattedAddress', 'location', 'id', 'addressComponents'];
-                if (config.mode !== 'smart_mapping') {
-                    // addressComponents needed for analytics tracking even without smart_mapping
-                }
 
                 place.fetchFields({ fields: fields }).then(function () {
-                    if (aga._selectionId !== selectionId) return; // stale selection, discard
+                    if (state.selectionId !== selectionId) {
+                        // Stale response — release the lock so the input remains usable.
+                        state.isSelecting = false;
+                        return;
+                    }
                     mainInput.value = place.formattedAddress || '';
                     mainInput.dispatchEvent(new Event('change', { bubbles: true }));
 
@@ -752,9 +779,7 @@
                         aga.centerMapPicker(place.location, config);
                     }
 
-                    if (aga.useNewAPI) {
-                        state.sessionToken = new google.maps.places.AutocompleteSessionToken();
-                    }
+                    state.sessionToken = new google.maps.places.AutocompleteSessionToken();
                     setTimeout(function () { state.isSelecting = false; }, 100);
 
                     if (config.address_validation) {
@@ -775,6 +800,9 @@
                         });
                     }
                     agaTrack.trackSelection(config.form_id, _trackCountry, _trackCity);
+                }).catch(function () {
+                    // Release the lock on any error so the input stays usable.
+                    state.isSelecting = false;
                 });
             } else {
                 // Legacy PlacesService fallback
@@ -785,7 +813,11 @@
                 var detailFields = ['formatted_address', 'geometry', 'place_id', 'address_components'];
 
                 service.getDetails({ placeId: placeId, fields: detailFields }, function (result, status) {
-                    if (aga._selectionId !== selectionId) return; // stale selection, discard
+                    if (state.selectionId !== selectionId) {
+                        // Stale response — release the lock so the input remains usable.
+                        state.isSelecting = false;
+                        return;
+                    }
                     if (status === google.maps.places.PlacesServiceStatus.OK && result) {
                         mainInput.value = result.formatted_address || '';
                         mainInput.dispatchEvent(new Event('change', { bubbles: true }));
@@ -874,6 +906,11 @@
         validateAddress: function (mainInput, address, placeId) {
             if (!address || typeof aga_frontend_data === 'undefined') return;
 
+            if (mainInput._agaUnsupportedCountry) {
+                aga.showUnsupportedCountryMessage(mainInput, mainInput._agaUnsupportedCountryName || '');
+                return;
+            }
+
             var badge = aga.getOrCreateValidationBadge(mainInput);
             badge.className = 'aga-validation-badge aga-validation-loading';
             badge.textContent = '';
@@ -889,6 +926,11 @@
                     place_id: placeId
                 },
                 success: function (response) {
+                    if (mainInput._agaUnsupportedCountry) {
+                        aga.showUnsupportedCountryMessage(mainInput, mainInput._agaUnsupportedCountryName || '');
+                        return;
+                    }
+
                     if (response.success && response.data) {
                         var level = response.data.level;
                         var message = response.data.message;
@@ -912,6 +954,11 @@
                     }
                 },
                 error: function () {
+                    if (mainInput._agaUnsupportedCountry) {
+                        aga.showUnsupportedCountryMessage(mainInput, mainInput._agaUnsupportedCountryName || '');
+                        return;
+                    }
+
                     badge.className = 'aga-validation-badge aga-validation-invalid aga-validation-visible';
                     badge.innerHTML = '<span>\u2717</span> Not verified';
                     badge.title = 'Validation request failed.';
@@ -954,6 +1001,8 @@
                     var result = results[0];
                     mainInput.value = result.formatted_address || '';
                     mainInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    mainInput._agaUnsupportedCountry = false;
+                    mainInput._agaUnsupportedCountryName = '';
 
                     if (aga.detectPOBox(mainInput.value)) {
                         aga.showPOBoxWarning(mainInput);
@@ -996,7 +1045,8 @@
                 street_number: '', route: '', locality: '', sublocality: '',
                 administrative_area_level_1_long: '', administrative_area_level_1_short: '',
                 administrative_area_level_2: '',
-                country_long: '', country_short: '', postal_code: ''
+                country_long: '', country_short: '', postal_code: '',
+                subpremise: '', premise: '', floor: '', room: ''
             };
             components.forEach(function (c) {
                 (c.types || []).forEach(function (type) {
@@ -1016,6 +1066,10 @@
                             parsed.country_long = c.long_name;
                             parsed.country_short = c.short_name; break;
                         case 'postal_code': parsed.postal_code = c.long_name; break;
+                        case 'subpremise': parsed.subpremise = c.long_name; break;
+                        case 'premise': parsed.premise = c.long_name; break;
+                        case 'floor': parsed.floor = c.long_name; break;
+                        case 'room': parsed.room = c.long_name; break;
                     }
                 });
             });
@@ -1023,16 +1077,41 @@
         },
 
         applyParsedComponents: function (components, config, mainInput) {
+            var countryCode = components.country_short || '';
+            var countryName = components.country_long || '';
+
+            mainInput._agaUnsupportedCountry = false;
+            mainInput._agaUnsupportedCountryName = '';
+
             if (config.selectors.country) {
                 var countryPrimary = (config.formats && config.formats.country === 'short') ? components.country_short : components.country_long;
                 var countryAlt = (config.formats && config.formats.country === 'short') ? components.country_long : components.country_short;
+                var countryField = aga.getField(config.selectors.country, mainInput);
+
+                if (countryField && countryField.tagName === 'SELECT' && !aga.isCountryAllowed(countryField, countryCode, countryName)) {
+                    mainInput._agaUnsupportedCountry = true;
+                    mainInput._agaUnsupportedCountryName = countryName || countryCode || '';
+                    aga.showUnsupportedCountryMessage(mainInput, mainInput._agaUnsupportedCountryName);
+                    return;
+                }
+
                 aga.setFieldValue(config.selectors.country, countryPrimary, countryAlt, mainInput);
             }
+
+            var address2Selector = (config.selectors && config.selectors.street2) ? config.selectors.street2 : '#billing_address_2';
+            var addressLine2 = aga.getAddressLine2(components);
+            aga.setFieldValue(address2Selector, addressLine2, undefined, mainInput);
+
             if (config.selectors.street) {
                 aga.setFieldValue(config.selectors.street, (components.street_number + ' ' + components.route).trim(), undefined, mainInput);
             }
             if (config.selectors.city) {
-                aga.setFieldValue(config.selectors.city, components.locality || components.sublocality || components.administrative_area_level_2 || '', undefined, mainInput);
+                aga.setFieldValue(
+                    config.selectors.city,
+                    components.locality || components.sublocality || components.administrative_area_level_2 || '',
+                    undefined,
+                    mainInput
+                );
             }
 
             var statePrimary = (config.formats && config.formats.state === 'short') ? components.administrative_area_level_1_short : components.administrative_area_level_1_long;
@@ -1120,6 +1199,52 @@
             }
         },
 
+        getField: function (selector, context) {
+            if (!selector) return null;
+            var scope = context
+                ? (context.closest('form') || context.closest('.wpcf7-form, .wpforms-form, .gform_wrapper, .elementor-form, .frm_forms') || document)
+                : document;
+            return scope.querySelector(selector);
+        },
+
+        showUnsupportedCountryMessage: function (mainInput, countryName) {
+            var badge = aga.getOrCreateValidationBadge(mainInput);
+            badge.className = 'aga-validation-badge aga-validation-invalid aga-validation-visible';
+            var text = countryName
+                ? 'Not verified — We currently do not ship to ' + countryName
+                : 'Not verified — We currently do not ship to this country/region';
+            badge.innerHTML = '<span>✗</span> ' + text;
+            badge.title = text;
+        },
+
+        isCountryAllowed: function (countryField, countryCode, countryName) {
+            if (!countryField || countryField.tagName !== 'SELECT') return true;
+            if (!countryCode && !countryName) return true;
+
+            var code = countryCode ? String(countryCode).trim().toUpperCase() : '';
+            var name = countryName ? String(countryName).trim().toLowerCase() : '';
+
+            for (var i = 0; i < countryField.options.length; i++) {
+                var option = countryField.options[i];
+                var optionValue = String(option.value || '').trim().toUpperCase();
+                var optionText = String(option.text || '').trim().toLowerCase();
+
+                if (code && optionValue === code) return true;
+                if (!code && name && optionText === name) return true;
+            }
+
+            return false;
+        },
+
+        getAddressLine2: function (components) {
+            var parts = [];
+            if (components.subpremise) parts.push(components.subpremise);
+            else if (components.room) parts.push(components.room);
+            if (components.floor) parts.push(components.floor);
+            if (!components.subpremise && components.premise) parts.push(components.premise);
+            return parts.join(', ').trim();
+        },
+
         applyMapping: function (place, config, mainInput) {
             if (config.selectors.lat && place.location) {
                 aga.setFieldValue(config.selectors.lat, place.location.lat(), undefined, mainInput);
@@ -1134,6 +1259,10 @@
             if (config.mode === 'smart_mapping' && place.addressComponents) {
                 var components = aga.parseAddressComponents(place.addressComponents);
                 var countryCode = components.country_short || '';
+                var countryName = components.country_long || '';
+
+                mainInput._agaUnsupportedCountry = false;
+                mainInput._agaUnsupportedCountryName = '';
 
                 // Set country FIRST — frameworks like WooCommerce re-render
                 // state/postcode fields when country changes.
@@ -1141,8 +1270,21 @@
                     var fmt = config.formats || {};
                     var countryPrimary = (fmt.country === 'short') ? components.country_short : components.country_long;
                     var countryAlt = (fmt.country === 'short') ? components.country_long : components.country_short;
+                    var countryField = aga.getField(config.selectors.country, mainInput);
+
+                    if (countryField && countryField.tagName === 'SELECT' && !aga.isCountryAllowed(countryField, countryCode, countryName)) {
+                        mainInput._agaUnsupportedCountry = true;
+                        mainInput._agaUnsupportedCountryName = countryName || countryCode || '';
+                        aga.showUnsupportedCountryMessage(mainInput, mainInput._agaUnsupportedCountryName);
+                        return;
+                    }
+
                     aga.setFieldValue(config.selectors.country, countryPrimary, countryAlt, mainInput);
                 }
+
+                var address2Selector = (config.selectors && config.selectors.street2) ? config.selectors.street2 : '#billing_address_2';
+                var addressLine2 = aga.getAddressLine2(components);
+                aga.setFieldValue(address2Selector, addressLine2, undefined, mainInput);
 
                 if (config.selectors.street) {
                     aga.setFieldValue(config.selectors.street, (components.street_number + ' ' + components.route).trim(), undefined, mainInput);
@@ -1174,7 +1316,11 @@
 
         setFieldValue: function (selector, value, altValue, context) {
             if (!selector || value === undefined) return;
-            var scope = context ? (context.closest('form') || context.closest('.wpcf7-form, .wpforms-form, .gform_wrapper, .elementor-form, .frm_forms') || document) : document;
+
+            var scope = context
+                ? (context.closest('form') || context.closest('.wpcf7-form, .wpforms-form, .gform_wrapper, .elementor-form, .frm_forms') || document)
+                : document;
+
             var field = scope.querySelector(selector);
             if (!field) {
                 if (!aga._warnedSelectors[selector]) {
@@ -1186,27 +1332,33 @@
 
             var finalValue = value;
 
-            // Smart matching for <select> elements (country/state/district dropdowns).
-            // Try multiple strategies to find the right option.
+            // Smart matching for <select> elements — if no option found, skip silently.
             if (field.tagName === 'SELECT') {
-                finalValue = aga.findSelectMatch(field, value, altValue) || value;
+                var matchedValue = aga.findSelectMatch(field, value, altValue);
+                if (matchedValue === null) {
+                    return;
+                }
+                finalValue = matchedValue;
             }
 
             // For React-controlled inputs (e.g. WooCommerce block checkout),
             // we must use the native setter to trigger React's change detection.
-            var nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-                window.HTMLInputElement.prototype, 'value'
-            );
-            var nativeSelectValueSetter = Object.getOwnPropertyDescriptor(
-                window.HTMLSelectElement.prototype, 'value'
-            );
-            var nativeTextareaValueSetter = Object.getOwnPropertyDescriptor(
-                window.HTMLTextAreaElement.prototype, 'value'
-            );
+            var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+            var nativeSelectValueSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value');
+            var nativeTextareaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value');
 
-            if (field.tagName === 'SELECT' && nativeSelectValueSetter) {
-                nativeSelectValueSetter.set.call(field, finalValue);
-            } else if (field.tagName === 'TEXTAREA' && nativeTextareaValueSetter) {
+            if (field.tagName === 'SELECT') {
+                if (nativeSelectValueSetter) {
+                    nativeSelectValueSetter.set.call(field, finalValue);
+                } else {
+                    field.value = finalValue;
+                }
+                // Use jQuery trigger for WooCommerce/framework compatibility.
+                $(field).trigger('change');
+                return;
+            }
+
+            if (field.tagName === 'TEXTAREA' && nativeTextareaValueSetter) {
                 nativeTextareaValueSetter.set.call(field, finalValue);
             } else if (nativeInputValueSetter) {
                 nativeInputValueSetter.set.call(field, finalValue);
@@ -1372,8 +1524,16 @@
                     aga.hideDropdown(dropdown);
                     setTimeout(function () { state.isSelecting = false; }, 100);
                 };
-                li.addEventListener('click', savedSelectHandler);
-                li.addEventListener('touchend', savedSelectHandler);
+                var _savedTouched = false;
+                li.addEventListener('touchend', function (e) {
+                    _savedTouched = true;
+                    setTimeout(function () { _savedTouched = false; }, 500);
+                    savedSelectHandler(e);
+                });
+                li.addEventListener('click', function (e) {
+                    if (_savedTouched) return;
+                    savedSelectHandler(e);
+                });
 
                 dropdown.appendChild(li);
             });
@@ -1656,7 +1816,11 @@
                 administrative_area_level_4: '',
                 country_long: '',
                 country_short: '',
-                postal_code: ''
+                postal_code: '',
+                subpremise: '',
+                premise: '',
+                floor: '',
+                room: ''
             };
             components.forEach(function (component) {
                 var types = component.types || [];
@@ -1698,6 +1862,18 @@
                             break;
                         case 'postal_code':
                             parsed.postal_code = component.longText || component.long_name || '';
+                            break;
+                        case 'subpremise':
+                            parsed.subpremise = component.longText || component.long_name || '';
+                            break;
+                        case 'premise':
+                            parsed.premise = component.longText || component.long_name || '';
+                            break;
+                        case 'floor':
+                            parsed.floor = component.longText || component.long_name || '';
+                            break;
+                        case 'room':
+                            parsed.room = component.longText || component.long_name || '';
                             break;
                     }
                 });

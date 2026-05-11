@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google address autocomplete, woocommerce address, address validation, map picker, checkout autocomplete
 Requires at least: 5.4
 Tested up to: 6.9
-Stable tag: 5.3.3
+Stable tag: 5.3.5
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -289,6 +289,16 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 10. Analytics Dashboard -- Track searches, selections, and abandonment.
 
 == Changelog ==
+
+= 5.3.5 =
+* NEW: Country blocklist support — when WooCommerce is configured to sell only to specific countries, selecting an unsupported country address now shows a clear "We do not ship to [Country]" error badge and blocks checkout submission.
+* NEW: Address Line 2 auto-fill — apartment, floor, room, and unit numbers from Google's address components (subpremise, floor, room, premise) are now automatically populated into the Address Line 2 field.
+* FIX: Validation badge now correctly preserves the "unsupported country" message even when an AJAX validation response arrives after the country check.
+* FIX: WooCommerce "Place Order" button is disabled with a clear message when an unsupported country address is selected, and re-enabled automatically when a valid address is chosen.
+
+= 5.3.4 =
+* IMPROVED: Visual Selector Tool "Pick" buttons now appear next to all selector fields (Lat, Lng, Place ID, Street, City, State, Zip, Country, and all Smart Mapping fields) — not just the main address input.
+* IMPROVED: Admin form edit page UI updated with consistent picker button layout across all field rows.
 
 = 5.3.3 =
 * FIX: Autocomplete now works when Google Maps JavaScript API is loaded twice on the same page (e.g. by another plugin or theme). Resolves "sessionToken: not an instance of AutocompleteSessionToken" error on WooCommerce checkout and other pages with conflicting Maps scripts.

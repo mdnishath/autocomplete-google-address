@@ -186,6 +186,7 @@ class AGA_Plugin {
         $this->loader->add_action( 'wp_ajax_aga_dismiss_review', $plugin_admin, 'dismiss_review_banner' );
         $this->loader->add_action( 'admin_notices', $plugin_admin, 'render_upgrade_banner' );
         $this->loader->add_action( 'wp_ajax_aga_dismiss_upgrade', $plugin_admin, 'dismiss_upgrade_banner' );
+        $this->loader->add_action( 'wp_ajax_aga_vst_search_pages', $plugin_admin, 'vst_search_pages' );
         $this->loader->add_action( 'admin_footer', $plugin_admin, 'render_import_export_ui' );
 
         // Import/Export functionality
@@ -229,9 +230,18 @@ class AGA_Plugin {
         new AGA_REST_API();
 
         // Find globally active forms early.
-        $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'load_automatic_forms' );
+        $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'load_automatic_forms', 5 );
 
-		// Enqueue scripts in the footer, after shortcodes have been processed.
+        // Primary enqueue pass on the standard wp_enqueue_scripts hook so that page-cache and
+        // JS-optimization plugins (WP Rocket, LiteSpeed, Autoptimize, etc.) reliably capture
+        // the scripts for anonymous visitors. This catches globally-activated and page-specific
+        // forms found by load_automatic_forms().
+        $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles', 20 );
+        $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts', 20 );
+
+        // Fallback pass in wp_footer to pick up forms discovered late (e.g. via shortcodes
+        // rendered during the_content). All enqueue calls are idempotent, so running twice
+        // is safe.
 		$this->loader->add_action( 'wp_footer', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_footer', $plugin_public, 'enqueue_scripts' );
         
@@ -239,6 +249,13 @@ class AGA_Plugin {
         
         // Custom dropdown styles (Pro).
         $this->loader->add_action( 'wp_head', $plugin_public, 'output_custom_styles' );
+
+        // Diagnostic HTML comment when ?aga_debug=1 is in the URL.
+        // Run after wp_print_footer_scripts (priority 20) so we see the final enqueue state.
+        $this->loader->add_action( 'wp_footer', $plugin_public, 'maybe_print_debug_comment', 999 );
+
+        // WooCommerce checkout blocklist: block order placement when an unsupported country is selected.
+        $this->loader->add_action( 'wp_footer', $plugin_public, 'output_checkout_blocklist_script', 20 );
 
         // Shortcode
         $this->loader->add_shortcode( 'aga_form', $plugin_public, 'render_shortcode' );

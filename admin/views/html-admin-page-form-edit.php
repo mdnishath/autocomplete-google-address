@@ -105,9 +105,15 @@ function aga_pro_label( $checkout_url, $is_paying ) {
 								<span class="aga-tooltip-text"><?php esc_html_e( 'The CSS selector of the input field where users type their address. Right-click the field and choose "Inspect" to find it.', 'autocomplete-google-address' ); ?></span>
 							</span>
 						</label>
-						<input type="text" id="aga_main_selector" name="Nish_aga_main_selector" value="<?php echo esc_attr( $main_selector ); ?>" class="widefat" placeholder="#id, .class, [name='field_name']" />
+						<div class="aga-vst-input-row">
+							<input type="text" id="aga_main_selector" name="Nish_aga_main_selector" value="<?php echo esc_attr( $main_selector ); ?>" class="widefat" placeholder="#id, .class, [name='field_name']" />
+							<?php if ( $is_paying ) : ?>
+							<button type="button" class="aga-vst-pick-btn" title="<?php esc_attr_e( 'Click to visually select a field from your page', 'autocomplete-google-address' ); ?>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg><span class="aga-vst-pick-label"><?php esc_html_e( 'Pick', 'autocomplete-google-address' ); ?></span></button>
+							<?php endif; ?>
+						</div>
 						<p class="description">
 							<code>#billing_address</code> <code>.address-field</code> <code>[name="address"]</code>
+							<?php if ( $is_paying ) : ?>&mdash; <?php esc_html_e( 'or use the picker button', 'autocomplete-google-address' ); ?><?php endif; ?>
 						</p>
 					</div>
 					</div>
@@ -224,15 +230,24 @@ function aga_pro_label( $checkout_url, $is_paying ) {
 						<p><?php esc_html_e( 'The full address goes into the trigger field. Optionally capture extra data.', 'autocomplete-google-address' ); ?></p>
 						<div class="aga-field-group">
 							<label for="aga_lat_selector"><?php esc_html_e( 'Latitude Selector', 'autocomplete-google-address' ); ?></label>
-							<input type="text" id="aga_lat_selector" name="Nish_aga_lat_selector" value="<?php echo esc_attr( $lat_selector ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'Optional - e.g., #lat_field', 'autocomplete-google-address' ); ?>" />
+							<div class="aga-vst-input-row">
+								<input type="text" id="aga_lat_selector" name="Nish_aga_lat_selector" value="<?php echo esc_attr( $lat_selector ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'Optional - e.g., #lat_field', 'autocomplete-google-address' ); ?>" />
+								<button type="button" class="aga-vst-pick-btn" title="<?php esc_attr_e( 'Click to visually select a field from your page', 'autocomplete-google-address' ); ?>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg><span class="aga-vst-pick-label"><?php esc_html_e( 'Pick', 'autocomplete-google-address' ); ?></span></button>
+							</div>
 						</div>
 						<div class="aga-field-group">
 							<label for="aga_lng_selector"><?php esc_html_e( 'Longitude Selector', 'autocomplete-google-address' ); ?></label>
-							<input type="text" id="aga_lng_selector" name="Nish_aga_lng_selector" value="<?php echo esc_attr( $lng_selector ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'Optional - e.g., #lng_field', 'autocomplete-google-address' ); ?>" />
+							<div class="aga-vst-input-row">
+								<input type="text" id="aga_lng_selector" name="Nish_aga_lng_selector" value="<?php echo esc_attr( $lng_selector ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'Optional - e.g., #lng_field', 'autocomplete-google-address' ); ?>" />
+								<button type="button" class="aga-vst-pick-btn" title="<?php esc_attr_e( 'Click to visually select a field from your page', 'autocomplete-google-address' ); ?>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg><span class="aga-vst-pick-label"><?php esc_html_e( 'Pick', 'autocomplete-google-address' ); ?></span></button>
+							</div>
 						</div>
 						<div class="aga-field-group">
 							<label for="aga_place_id_selector"><?php esc_html_e( 'Place ID Selector', 'autocomplete-google-address' ); ?></label>
-							<input type="text" id="aga_place_id_selector" name="Nish_aga_place_id_selector" value="<?php echo esc_attr( $place_id_selector ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'Optional - e.g., #place_id_field', 'autocomplete-google-address' ); ?>" />
+							<div class="aga-vst-input-row">
+								<input type="text" id="aga_place_id_selector" name="Nish_aga_place_id_selector" value="<?php echo esc_attr( $place_id_selector ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'Optional - e.g., #place_id_field', 'autocomplete-google-address' ); ?>" />
+								<button type="button" class="aga-vst-pick-btn" title="<?php esc_attr_e( 'Click to visually select a field from your page', 'autocomplete-google-address' ); ?>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg><span class="aga-vst-pick-label"><?php esc_html_e( 'Pick', 'autocomplete-google-address' ); ?></span></button>
+							</div>
 						</div>
 					</div>
 					<!-- Smart Mapping Panel -->
@@ -260,7 +275,10 @@ function aga_pro_label( $checkout_url, $is_paying ) {
 							foreach ( $smart_fields as $field ) : ?>
 							<div class="aga-field-group">
 								<label for="<?php echo esc_attr( $field['id'] ); ?>"><?php echo esc_html( $field['label'] ); ?></label>
-								<input type="text" id="<?php echo esc_attr( $field['id'] ); ?>" name="<?php echo esc_attr( $field['name'] ); ?>" value="<?php echo esc_attr( $field['value'] ); ?>" class="widefat" placeholder="#id, .class, [name='field']" />
+								<div class="aga-vst-input-row">
+									<input type="text" id="<?php echo esc_attr( $field['id'] ); ?>" name="<?php echo esc_attr( $field['name'] ); ?>" value="<?php echo esc_attr( $field['value'] ); ?>" class="widefat" placeholder="#id, .class, [name='field']" />
+									<button type="button" class="aga-vst-pick-btn" title="<?php esc_attr_e( 'Click to visually select a field from your page', 'autocomplete-google-address' ); ?>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg><span class="aga-vst-pick-label"><?php esc_html_e( 'Pick', 'autocomplete-google-address' ); ?></span></button>
+								</div>
 							</div>
 							<?php endforeach; ?>
 						</div>
