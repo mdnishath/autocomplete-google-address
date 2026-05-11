@@ -1,0 +1,11 @@
+.git
+.github
+.distignore
+.gitignore
+docs/
+*.md
+composer.json
+composer.lock
+package.json
+package-lock.json
+node_modules/
