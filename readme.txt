@@ -8,7 +8,7 @@ Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-The #1 Google Address Autocomplete for WordPress. Visual point-and-click setup -- no coding needed. Works with WooCommerce, CF7, WPForms, Gravity Forms, Elementor, and any form.
+The #1 Google Address Autocomplete for WordPress. Point-and-click setup, no coding. Works with WooCommerce, CF7, WPForms, Gravity Forms & Elementor.
 
 == Description ==
 
