@@ -345,51 +345,70 @@
 .aga-switch {
     position: relative;
     display: inline-block;
+    flex-shrink: 0;
     width: 44px;
+    min-width: 44px;
     height: 24px;
+    vertical-align: middle;
+    overflow: visible;
+    box-sizing: content-box;
 }
 
 .aga-switch input {
+    position: absolute;
     opacity: 0;
     width: 0;
     height: 0;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
 }
 
-.aga-slider {
+.aga-switch .aga-slider {
     position: absolute;
     cursor: pointer;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    width: 44px;
+    height: 24px;
     background-color: var(--aga-text-muted);
     transition: background-color 0.3s ease;
     border-radius: var(--aga-radius-full);
+    box-sizing: border-box;
 }
 
-.aga-slider:before {
+.aga-switch .aga-slider:before {
     position: absolute;
     content: "";
     height: 18px;
     width: 18px;
     left: 3px;
-    bottom: 3px;
-    background-color: var(--aga-bg-card);
+    top: 3px;
+    bottom: auto;
+    background-color: #fff;
     transition: transform 0.3s ease;
     border-radius: 50%;
     box-shadow: var(--aga-shadow-sm);
+    box-sizing: border-box;
 }
 
-input:checked + .aga-slider {
+.aga-switch input:checked + .aga-slider {
     background-color: var(--aga-primary);
 }
 
-input:checked + .aga-slider:before {
+.aga-switch input:checked + .aga-slider:before {
     transform: translateX(20px);
 }
 
-input:focus + .aga-slider {
+.aga-switch input:focus-visible + .aga-slider {
     box-shadow: 0 0 0 3px var(--aga-primary-light);
+}
+
+.aga-switch input:disabled + .aga-slider {
+    cursor: not-allowed;
+    opacity: 0.55;
 }
 
 
@@ -2698,5 +2717,77 @@ body.aga-vst-open {
     .aga-vst-header-center {
         order: 3;
         flex-basis: 100%;
+    }
+}
+
+/* ==========================================================================
+   Mapping Mode — Pro lock preview
+   ========================================================================== */
+
+.aga-pro-inline-callout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--aga-space-md);
+    padding: var(--aga-space-md);
+    margin-bottom: var(--aga-space-md);
+    background: linear-gradient(135deg, rgba(var(--aga-primary-rgb), 0.08), rgba(var(--aga-primary-rgb), 0.02));
+    border: 1px solid rgba(var(--aga-primary-rgb), 0.25);
+    border-radius: var(--aga-radius-md);
+}
+
+.aga-pro-inline-callout__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.aga-pro-inline-callout__text strong {
+    color: var(--aga-text);
+    font-size: var(--aga-font-size-sm);
+}
+
+.aga-pro-inline-callout__text span {
+    color: var(--aga-text-muted);
+    font-size: var(--aga-font-size-xs);
+}
+
+.aga-pro-inline-callout .button-primary {
+    flex-shrink: 0;
+}
+
+/* Locked panel: disabled inputs styled as preview */
+.aga-mode-panel--locked input[type="text"],
+.aga-mode-panel--locked select,
+.aga-mode-panel--locked .aga-vst-pick-btn {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--aga-bg-subtle, #f6f7f7);
+}
+
+.aga-mode-panel--locked .aga-vst-pick-btn:hover {
+    background: var(--aga-bg-subtle, #f6f7f7);
+    color: inherit;
+    border-color: var(--aga-border);
+    transform: none;
+    box-shadow: none;
+}
+
+.aga-mode-panel--locked label {
+    color: var(--aga-text-muted);
+}
+
+/* Inline-row variant (used inside Mapping Mode panel — no full-width border) */
+.aga-toggle-row--inline {
+    border-bottom: none;
+    padding: var(--aga-space-sm) 0;
+    gap: var(--aga-space-md);
+}
+
+@media screen and (max-width: 600px) {
+    .aga-pro-inline-callout {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

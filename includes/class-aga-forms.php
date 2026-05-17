@@ -198,6 +198,12 @@ public function add_custom_add_new_menu() {
             isset( $_POST['Nish_aga_map_picker'] ) ? '1' : ''
         );
 
+        update_post_meta(
+            $post_id,
+            'Nish_aga_street_full_address',
+            isset( $_POST['Nish_aga_street_full_address'] ) ? '1' : ''
+        );
+
         if ( isset( $_POST['Nish_aga_load_on_pages'] ) && is_array( $_POST['Nish_aga_load_on_pages'] ) ) {
             update_post_meta(
                 $post_id,
@@ -288,12 +294,8 @@ public function add_custom_add_new_menu() {
     public function custom_column_content( $column, $post_id ) {
 
         if ( 'aga_mode' === $column ) {
-            $mode = get_post_meta( $post_id, 'Nish_aga_mode', true );
-            echo esc_html(
-                $mode === 'single_line'
-                    ? 'Single Line'
-                    : ( $mode === 'smart_mapping' ? 'Smart Mapping' : 'None' )
-            );
+            $is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+            echo esc_html( $is_paying ? 'Smart Mapping' : 'Smart Mapping (Pro)' );
         }
 
         if ( 'aga_global' === $column ) {

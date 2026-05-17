@@ -11,18 +11,11 @@
             });
         }
 
-        // ---- Mode Toggling Logic ----
-        var modeRadios = $('input[name="Nish_aga_mode"]');
-        var modePanels = $('.aga-mode-panel');
-
+        // ---- Mode Toggling Logic (single mode now — kept as no-op for legacy callers) ----
         function toggleModePanels() {
-            var selectedMode = modeRadios.filter(':checked').val();
-            modePanels.removeClass('active');
-            $('#aga-panel-' + selectedMode).addClass('active');
+            $('.aga-mode-panel').addClass('active');
         }
-
         toggleModePanels();
-        modeRadios.on('change', toggleModePanels);
 
         // ---- Settings Page Tabs ----
         $('.aga-tab').on('click', function () {
@@ -53,9 +46,7 @@
                 if (flash) aga_flashField('#aga_main_selector');
             }
 
-            // Switch to smart mapping mode and toggle panel
-            $('#mode_smart_mapping').prop('checked', true);
-            toggleModePanels();
+            // Smart mapping is now the only mode — nothing to switch.
 
             // Fill smart mapping fields
             var fieldMap = {

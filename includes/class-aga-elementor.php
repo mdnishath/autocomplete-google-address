@@ -159,7 +159,7 @@ class AGA_Elementor {
                     var inputSize = settings.input_size || 'sm';
                     var itemClasses = _.escape(item.css_classes) || '';
                     var required = item.required ? 'required' : '';
-                    var mode = item.aga_mode || 'single_line';
+                    var mode = item.aga_mode || 'smart_mapping';
 
                     var html = '<input size=\"1\" type=\"text\" class=\"elementor-field elementor-field-textual elementor-size-' + inputSize + ' ' + itemClasses + '\" name=\"form_field_' + i + '\" id=\"form_field_' + i + '\" ' + required + ' placeholder=\"' + placeholder + '\" autocomplete=\"off\">';
 

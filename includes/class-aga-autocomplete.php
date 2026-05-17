@@ -25,6 +25,9 @@ class AGA_Autocomplete {
         }
 
         $mode = get_post_meta( $form_id, 'Nish_aga_mode', true );
+        if ( 'smart_mapping' !== $mode ) {
+            $mode = 'smart_mapping';
+        }
         $main_selector = get_post_meta( $form_id, 'Nish_aga_main_selector', true );
 
         $config = array(
@@ -37,11 +40,7 @@ class AGA_Autocomplete {
 
         $is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
 
-        if ( 'single_line' === $mode ) {
-            $config['selectors']['lat'] = get_post_meta( $form_id, 'Nish_aga_lat_selector', true );
-            $config['selectors']['lng'] = get_post_meta( $form_id, 'Nish_aga_lng_selector', true );
-            $config['selectors']['place_id'] = get_post_meta( $form_id, 'Nish_aga_place_id_selector', true );
-        } elseif ( 'smart_mapping' === $mode && $is_paying ) {
+        if ( $is_paying ) {
             $config['selectors']['street'] = get_post_meta( $form_id, 'Nish_aga_street_selector', true );
             $config['selectors']['city'] = get_post_meta( $form_id, 'Nish_aga_city_selector', true );
             $config['selectors']['state'] = get_post_meta( $form_id, 'Nish_aga_state_selector', true );
@@ -50,11 +49,13 @@ class AGA_Autocomplete {
             $config['selectors']['lat'] = get_post_meta( $form_id, 'Nish_aga_map_lat_selector', true );
             $config['selectors']['lng'] = get_post_meta( $form_id, 'Nish_aga_map_lng_selector', true );
             $config['selectors']['place_id'] = get_post_meta( $form_id, 'Nish_aga_smart_place_id_selector', true );
-            
+
             $config['formats'] = array(
                 'state'   => get_post_meta( $form_id, 'Nish_aga_state_format', true ) ?: 'long',
                 'country' => get_post_meta( $form_id, 'Nish_aga_country_format', true ) ?: 'long',
             );
+
+            $config['street_full_address'] = ( '1' === get_post_meta( $form_id, 'Nish_aga_street_full_address', true ) );
         }
 
         // Add per-config settings for autocomplete restrictions (Pro feature)

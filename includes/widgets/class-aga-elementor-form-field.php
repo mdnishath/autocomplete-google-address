@@ -52,14 +52,8 @@ class AGA_Elementor_Form_Field extends \ElementorPro\Modules\Forms\Fields\Field_
 			'aga_mode' => array_merge( $tab_args, array(
 				'name'      => 'aga_mode',
 				'label'     => esc_html__( 'Mode', 'autocomplete-google-address' ),
-				'type'      => \Elementor\Controls_Manager::SELECT,
-				'default'   => 'single_line',
-				'options'   => array(
-					'single_line'   => esc_html__( 'Single Line', 'autocomplete-google-address' ),
-					'smart_mapping' => $is_paying
-						? esc_html__( 'Smart Mapping', 'autocomplete-google-address' )
-						: esc_html__( 'Smart Mapping (Pro)', 'autocomplete-google-address' ),
-				),
+				'type'      => \Elementor\Controls_Manager::HIDDEN,
+				'default'   => 'smart_mapping',
 				'condition' => $condition,
 			) ),
 			'aga_smart_fields' => array_merge( $tab_args, array(
@@ -160,10 +154,8 @@ class AGA_Elementor_Form_Field extends \ElementorPro\Modules\Forms\Fields\Field_
 		$field_id  = $item['custom_id'];
 		$is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
 
-		$mode = ! empty( $item['aga_mode'] ) ? $item['aga_mode'] : 'single_line';
-		if ( 'smart_mapping' === $mode && ! $is_paying ) {
-			$mode = 'single_line';
-		}
+		// Smart Mapping is Pro-only — fall back to plain single-line for free users.
+		$mode = $is_paying ? 'smart_mapping' : 'single_line';
 
 		$input_size = ! empty( $item['input_size'] ) ? $item['input_size'] : 'sm';
 

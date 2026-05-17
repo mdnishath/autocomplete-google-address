@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google address autocomplete, woocommerce address, address validation, map picker, checkout autocomplete
 Requires at least: 5.4
 Tested up to: 6.9
-Stable tag: 5.3.5
+Stable tag: 5.4.0
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -289,6 +289,12 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 10. Analytics Dashboard -- Track searches, selections, and abandonment.
 
 == Changelog ==
+
+= 5.4.0 =
+* CHANGED: Mapping Mode is now a single unified Pro feature — the legacy "Single Line" option has been removed. Free users see a locked preview of all mapping fields with an upgrade prompt; Pro users get the full configurator.
+* NEW: "Full Address in Street Field" toggle (Pro) — when enabled, the entire formatted address is written into the Street selector instead of only the street component. Useful when your form has a single visible address field but you still want all the structured data.
+* IMPROVED: Mapping Mode card redesigned — disabled-input preview for free users so the available fields and toggle are visible at a glance.
+* FIX: Toggle switches no longer overflow their track on the form-edit page; thumb stays inside the track in all admin themes.
 
 = 5.3.5 =
 * NEW: Country blocklist support — when WooCommerce is configured to sell only to specific countries, selecting an unsupported country address now shows a clear "We do not ship to [Country]" error badge and blocks checkout submission.

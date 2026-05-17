@@ -51,7 +51,7 @@ class AGA_Shortcode {
                 'id'          => 0,
                 'placeholder' => 'Start typing an address...',
                 'label'       => '',
-                'mode'        => 'single_line',
+                'mode'        => 'smart_mapping',
                 'country'     => '',
                 'show_map'    => 'false',
                 'class'       => '',
@@ -97,7 +97,7 @@ class AGA_Shortcode {
         $config['main_selector'] = $input_selector;
 
         // Build the HTML.
-        $mode       = ! empty( $config['mode'] ) ? $config['mode'] : 'single_line';
+        $mode       = ! empty( $config['mode'] ) ? $config['mode'] : 'smart_mapping';
         $show_map   = ! empty( $config['map_picker'] );
         $wrapper_class = 'aga-shortcode-wrapper';
         if ( ! empty( $atts['class'] ) ) {
@@ -126,7 +126,9 @@ class AGA_Shortcode {
      * @return string HTML output.
      */
     private function render_standalone( $instance_id, $atts ) {
-        $mode     = in_array( $atts['mode'], array( 'single_line', 'smart_mapping' ), true ) ? $atts['mode'] : 'single_line';
+        $is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+        // Smart Mapping is Pro-only — fall back to plain single-line for free users.
+        $mode      = $is_paying ? 'smart_mapping' : 'single_line';
         $show_map = 'true' === strtolower( $atts['show_map'] );
 
         $wrapper_class = 'aga-shortcode-wrapper';

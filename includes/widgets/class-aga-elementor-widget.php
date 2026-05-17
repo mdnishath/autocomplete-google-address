@@ -91,22 +91,12 @@ class AGA_Elementor_Widget extends \Elementor\Widget_Base {
             )
         );
 
-        $mode_options = array(
-            'single_line' => esc_html__( 'Single Line', 'autocomplete-google-address' ),
-        );
-        if ( $is_paying ) {
-            $mode_options['smart_mapping'] = esc_html__( 'Smart Mapping', 'autocomplete-google-address' );
-        } else {
-            $mode_options['smart_mapping'] = esc_html__( 'Smart Mapping (Pro)', 'autocomplete-google-address' );
-        }
-
         $this->add_control(
             'mode',
             array(
                 'label'   => esc_html__( 'Mode', 'autocomplete-google-address' ),
-                'type'    => \Elementor\Controls_Manager::SELECT,
-                'default' => 'single_line',
-                'options' => $mode_options,
+                'type'    => \Elementor\Controls_Manager::HIDDEN,
+                'default' => 'smart_mapping',
             )
         );
 
@@ -374,11 +364,8 @@ class AGA_Elementor_Widget extends \Elementor\Widget_Base {
         $widget_id = $this->get_id();
         $instance_id = 'aga-el-' . $widget_id;
 
-        // Determine effective mode — fall back to single_line for free users.
-        $mode = $settings['mode'];
-        if ( 'smart_mapping' === $mode && ! $is_paying ) {
-            $mode = 'single_line';
-        }
+        // Smart Mapping is Pro-only — fall back to plain single-line for free users.
+        $mode = $is_paying ? 'smart_mapping' : 'single_line';
 
         $show_map              = $is_paying && 'yes' === ( $settings['show_map'] ?? '' );
         $show_geolocation      = $is_paying && 'yes' === ( $settings['show_geolocation'] ?? '' );

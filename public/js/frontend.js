@@ -1020,7 +1020,7 @@
                     // Update smart mapping fields
                     if (config.mode === 'smart_mapping' && result.address_components) {
                         var components = aga.parseReverseComponents(result.address_components);
-                        aga.applyParsedComponents(components, config, mainInput);
+                        aga.applyParsedComponents(components, config, mainInput, result.formatted_address || '');
                     }
 
                     // Re-validate after drag
@@ -1076,7 +1076,7 @@
             return parsed;
         },
 
-        applyParsedComponents: function (components, config, mainInput) {
+        applyParsedComponents: function (components, config, mainInput, formattedAddress) {
             var countryCode = components.country_short || '';
             var countryName = components.country_long || '';
 
@@ -1103,7 +1103,10 @@
             aga.setFieldValue(address2Selector, addressLine2, undefined, mainInput);
 
             if (config.selectors.street) {
-                aga.setFieldValue(config.selectors.street, (components.street_number + ' ' + components.route).trim(), undefined, mainInput);
+                var streetValue = (config.street_full_address && formattedAddress)
+                    ? formattedAddress
+                    : (components.street_number + ' ' + components.route).trim();
+                aga.setFieldValue(config.selectors.street, streetValue, undefined, mainInput);
             }
             if (config.selectors.city) {
                 aga.setFieldValue(
@@ -1287,7 +1290,10 @@
                 aga.setFieldValue(address2Selector, addressLine2, undefined, mainInput);
 
                 if (config.selectors.street) {
-                    aga.setFieldValue(config.selectors.street, (components.street_number + ' ' + components.route).trim(), undefined, mainInput);
+                    var streetValue = (config.street_full_address && place.formattedAddress)
+                        ? place.formattedAddress
+                        : (components.street_number + ' ' + components.route).trim();
+                    aga.setFieldValue(config.selectors.street, streetValue, undefined, mainInput);
                 }
 
                 // Smart country-aware city mapping
