@@ -2,8 +2,8 @@
 Contributors: nishatbd31, freemius
 Tags: google address autocomplete, woocommerce address, address validation, map picker, checkout autocomplete
 Requires at least: 5.4
-Tested up to: 6.9
-Stable tag: 5.4.0
+Tested up to: 7.0
+Stable tag: 5.4.1
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -290,6 +290,10 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 
 == Changelog ==
 
+= 5.4.1 =
+* COMPATIBILITY: Tested and verified against WordPress 7.0. No deprecated APIs in use — text domain loads on `plugins_loaded`, the custom post type registers on `init`, and all translation calls fire after `init` (no just-in-time translation notices).
+* MAINTENANCE: Bumped "Tested up to" to 7.0.
+
 = 5.4.0 =
 * CHANGED: Mapping Mode is now a single unified Pro feature — the legacy "Single Line" option has been removed. Free users see a locked preview of all mapping fields with an upgrade prompt; Pro users get the full configurator.
 * NEW: "Full Address in Street Field" toggle (Pro) — when enabled, the entire formatted address is written into the Street selector instead of only the street component. Useful when your form has a single visible address field but you still want all the structured data.
@@ -360,6 +364,9 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 * Initial release.
 
 == Upgrade Notice ==
+
+= 5.4.1 =
+Verified compatible with WordPress 7.0. Recommended maintenance update.
 
 = 5.3.1 =
 AJAX page search with pagination for large sites (750+ pages). "Forms Only" filter to quickly find pages with forms. Upgrade recommended.
