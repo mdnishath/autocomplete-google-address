@@ -2,8 +2,8 @@
 Contributors: nishatbd31, freemius
 Tags: google address autocomplete, woocommerce address, address validation, map picker, checkout autocomplete
 Requires at least: 5.4
-Tested up to: 7.0
-Stable tag: 5.4.1
+Tested up to: 7.0.1
+Stable tag: 5.4.2
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -290,6 +290,10 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 
 == Changelog ==
 
+= 5.4.2 =
+* COMPATIBILITY: Tested and verified against WordPress 7.0.1. No code changes required — the plugin uses no deprecated or removed APIs.
+* MAINTENANCE: Bumped "Tested up to" to 7.0.1.
+
 = 5.4.1 =
 * COMPATIBILITY: Tested and verified against WordPress 7.0. No deprecated APIs in use — text domain loads on `plugins_loaded`, the custom post type registers on `init`, and all translation calls fire after `init` (no just-in-time translation notices).
 * MAINTENANCE: Bumped "Tested up to" to 7.0.
@@ -364,6 +368,9 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 * Initial release.
 
 == Upgrade Notice ==
+
+= 5.4.2 =
+Verified compatible with WordPress 7.0.1. Recommended maintenance update.
 
 = 5.4.1 =
 Verified compatible with WordPress 7.0. Recommended maintenance update.
