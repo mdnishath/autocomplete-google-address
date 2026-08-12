@@ -1,9 +1,20 @@
 name: Deploy to WordPress.org
 
+# Releases happen on a normal push to main — no manual tagging needed.
+#
+# The job reads the version from the plugin header and releases only when that
+# version has no tag yet. So an ordinary commit (docs, CI, a bug fix without a
+# version bump) does nothing, and bumping the version is what ships the plugin
+# to WordPress.org. The tag is created here so the repo keeps a marker for
+# every released version, exactly like the older tag-triggered releases did.
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   deploy:
@@ -13,10 +24,65 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Read plugin version
+        id: version
+        run: |
+          set -euo pipefail
+
+          VERSION=$(grep -m1 -oP '^\s*\*\s*Version:\s*\K[0-9A-Za-z.\-]+' autocomplete-google-address.php || true)
+          STABLE=$(grep -m1 -oP '^Stable tag:\s*\K[0-9A-Za-z.\-]+' readme.txt || true)
+
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not read Version from the plugin header."
+            exit 1
+          fi
+
+          # A mismatch here is the classic release bug: WordPress.org shows the
+          # readme's Stable tag, so shipping with the two out of sync publishes
+          # a version users cannot install. Fail before anything is pushed.
+          if [ "$VERSION" != "$STABLE" ]; then
+            echo "::error::Version mismatch — plugin header says $VERSION but readme.txt Stable tag says $STABLE."
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "v$VERSION is already released — nothing to do."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "v$VERSION is not released yet — will tag and deploy."
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Tag the release
+        if: steps.version.outputs.release == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$VERSION" -m "v$VERSION"
+          git push origin "v$VERSION"
 
       - name: Deploy to WordPress.org
+        if: steps.version.outputs.release == 'true'
         uses: 10up/action-wordpress-plugin-deploy@stable
         env:
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SLUG: autocomplete-google-address
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.version.outputs.release }}" = "true" ]; then
+            echo "### Released v${{ steps.version.outputs.version }} to WordPress.org" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### No release — v${{ steps.version.outputs.version }} is already published" >> "$GITHUB_STEP_SUMMARY"
+            echo "Bump the version in the plugin header and readme.txt to ship a new release." >> "$GITHUB_STEP_SUMMARY"
+          fi
