@@ -171,6 +171,30 @@ if ( ! empty( $current_api_key ) ) {
 							</p>
 						</div>
 
+						<!-- State / Country name format -->
+						<div class="aga-field-group" style="margin-top: 15px;">
+							<label for="woocommerce_state_format">
+								<strong><?php esc_html_e( 'State Format', 'autocomplete-google-address' ); ?></strong>
+							</label>
+							<select id="woocommerce_state_format" name="Nish_aga_settings[woocommerce_state_format]">
+								<option value="short" <?php selected( $options['woocommerce_state_format'] ?? 'short', 'short' ); ?>><?php esc_html_e( 'Short Name (e.g., CA) — recommended', 'autocomplete-google-address' ); ?></option>
+								<option value="long" <?php selected( $options['woocommerce_state_format'] ?? 'short', 'long' ); ?>><?php esc_html_e( 'Long Name (e.g., California)', 'autocomplete-google-address' ); ?></option>
+							</select>
+						</div>
+
+						<div class="aga-field-group">
+							<label for="woocommerce_country_format">
+								<strong><?php esc_html_e( 'Country Format', 'autocomplete-google-address' ); ?></strong>
+							</label>
+							<select id="woocommerce_country_format" name="Nish_aga_settings[woocommerce_country_format]">
+								<option value="short" <?php selected( $options['woocommerce_country_format'] ?? 'short', 'short' ); ?>><?php esc_html_e( 'Short Name (e.g., US) — recommended', 'autocomplete-google-address' ); ?></option>
+								<option value="long" <?php selected( $options['woocommerce_country_format'] ?? 'short', 'long' ); ?>><?php esc_html_e( 'Long Name (e.g., United States)', 'autocomplete-google-address' ); ?></option>
+							</select>
+							<p class="description">
+								<?php esc_html_e( 'WooCommerce stores state and country as codes, so Short Name is correct for a standard checkout. Choose Long Name only if your theme or another plugin has replaced these dropdowns with plain text fields.', 'autocomplete-google-address' ); ?>
+							</p>
+						</div>
+
 						<div class="notice notice-info inline aga-mb-md" style="margin-top: 15px;">
 							<p>
 								<span class="dashicons dashicons-info aga-icon-inline"></span>

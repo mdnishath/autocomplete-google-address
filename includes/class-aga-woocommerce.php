@@ -6,16 +6,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * Adds Google Places autocomplete to WooCommerce checkout address fields
  * automatically when WooCommerce is active and the integration is enabled.
- * Auto-detects classic vs block checkout — no user configuration needed.
+ * Registers both classic and block checkout field sets; whichever exists on
+ * the page wins — no user configuration needed.
  */
 class AGA_WooCommerce {
-
-	/**
-	 * Whether the checkout page uses the block-based checkout.
-	 *
-	 * @var bool|null Null means not yet detected.
-	 */
-	private $is_block_checkout = null;
 
 	/**
 	 * Initialize hooks.
@@ -96,49 +90,40 @@ class AGA_WooCommerce {
 			return $configs;
 		}
 
-		$is_block = $this->detect_block_checkout();
-
-		if ( $is_block ) {
-			$configs = array_merge( $configs, $this->get_block_checkout_configs() );
-		} else {
-			$configs = array_merge( $configs, $this->get_classic_checkout_configs() );
-		}
+		// Register the classic AND block field sets. Sniffing the checkout page
+		// content for the `woocommerce/checkout` block misses every setup that
+		// renders checkout some other way — a template part, a shortcode inside
+		// a block theme, a page builder, or a plugin that swaps the template —
+		// and guessing wrong means no autocomplete at all. Configs whose main
+		// selector is absent from the DOM are skipped on the frontend, so
+		// shipping both is free and always matches.
+		$configs = array_merge(
+			$configs,
+			$this->get_classic_checkout_configs(),
+			$this->get_block_checkout_configs()
+		);
 
 		return $configs;
 	}
 
 	/**
-	 * Auto-detect whether the checkout page uses the block-based checkout.
+	 * State and country name formats for the checkout fields.
 	 *
-	 * Checks if the WooCommerce checkout page content contains the
-	 * `woocommerce/checkout` block. Falls back to classic checkout.
+	 * WooCommerce stores ISO codes (`US`, `CA`), so `short` is the correct
+	 * default. The setting exists for stores whose theme or a third-party
+	 * plugin has replaced the state/country selects with plain text inputs,
+	 * where a customer would rather see "California" than "CA".
 	 *
-	 * @return bool
+	 * @return array
 	 */
-	private function detect_block_checkout() {
-		if ( null !== $this->is_block_checkout ) {
-			return $this->is_block_checkout;
-		}
+	private function get_formats() {
+		$state   = aga_get_setting( 'woocommerce_state_format', 'short' );
+		$country = aga_get_setting( 'woocommerce_country_format', 'short' );
 
-		$this->is_block_checkout = false;
-
-		// Method 1: Check if the checkout page post content contains the checkout block.
-		$checkout_page_id = wc_get_page_id( 'checkout' );
-		if ( $checkout_page_id > 0 ) {
-			$post = get_post( $checkout_page_id );
-			if ( $post && has_block( 'woocommerce/checkout', $post ) ) {
-				$this->is_block_checkout = true;
-				return true;
-			}
-		}
-
-		// Method 2: Check if the WooCommerce Blocks checkout is registered.
-		if ( class_exists( '\Automattic\WooCommerce\Blocks\BlockTypes\Checkout' ) ) {
-			// The block class exists, but the page might not use it.
-			// We already checked post content above, so this is a secondary signal.
-		}
-
-		return $this->is_block_checkout;
+		return array(
+			'state'   => ( 'long' === $state ) ? 'long' : 'short',
+			'country' => ( 'long' === $country ) ? 'long' : 'short',
+		);
 	}
 
 	/**
@@ -147,6 +132,8 @@ class AGA_WooCommerce {
 	 * @return array
 	 */
 	private function get_classic_checkout_configs() {
+		$formats = $this->get_formats();
+
 		return array(
 			array(
 				'form_id'                => 'woo_billing',
@@ -159,10 +146,7 @@ class AGA_WooCommerce {
 					'zip'     => '#billing_postcode',
 					'country' => '#billing_country',
 				),
-				'formats'                => array(
-					'state'   => 'short',
-					'country' => 'short',
-				),
+				'formats'                => $formats,
 				'component_restrictions' => array(),
 				'place_types'            => '',
 				'geolocation'            => false,
@@ -181,10 +165,7 @@ class AGA_WooCommerce {
 					'zip'     => '#shipping_postcode',
 					'country' => '#shipping_country',
 				),
-				'formats'                => array(
-					'state'   => 'short',
-					'country' => 'short',
-				),
+				'formats'                => $formats,
 				'component_restrictions' => array(),
 				'place_types'            => '',
 				'geolocation'            => false,
@@ -201,6 +182,8 @@ class AGA_WooCommerce {
 	 * @return array
 	 */
 	private function get_block_checkout_configs() {
+		$formats = $this->get_formats();
+
 		return array(
 			array(
 				'form_id'                => 'woo_block_billing',
@@ -213,10 +196,7 @@ class AGA_WooCommerce {
 					'zip'     => '#billing-postcode',
 					'country' => '#billing-country',
 				),
-				'formats'                => array(
-					'state'   => 'short',
-					'country' => 'short',
-				),
+				'formats'                => $formats,
 				'component_restrictions' => array(),
 				'place_types'            => '',
 				'geolocation'            => false,
@@ -235,10 +215,7 @@ class AGA_WooCommerce {
 					'zip'     => '#shipping-postcode',
 					'country' => '#shipping-country',
 				),
-				'formats'                => array(
-					'state'   => 'short',
-					'country' => 'short',
-				),
+				'formats'                => $formats,
 				'component_restrictions' => array(),
 				'place_types'            => '',
 				'geolocation'            => false,

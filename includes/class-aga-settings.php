@@ -105,6 +105,14 @@ class AGA_Settings {
         // WooCommerce tab toggles.
         if ( 'woocommerce' === $active_tab || empty( $active_tab ) ) {
             $new_input['woocommerce_enabled'] = ! empty( $input['woocommerce_enabled'] ) ? 1 : 0;
+
+            // State/country name format for the checkout fields. Only 'long'
+            // and 'short' are valid; anything else falls back to 'short'.
+            foreach ( array( 'woocommerce_state_format', 'woocommerce_country_format' ) as $format_key ) {
+                if ( isset( $input[ $format_key ] ) ) {
+                    $new_input[ $format_key ] = ( 'long' === $input[ $format_key ] ) ? 'long' : 'short';
+                }
+            }
         }
 
         // Appearance settings.

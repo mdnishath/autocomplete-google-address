@@ -1042,9 +1042,10 @@
 
         parseReverseComponents: function (components) {
             var parsed = {
-                street_number: '', route: '', locality: '', sublocality: '',
+                street_number: '', route: '', locality: '', postal_town: '', sublocality: '',
                 administrative_area_level_1_long: '', administrative_area_level_1_short: '',
                 administrative_area_level_2: '',
+                administrative_area_level_2_long: '', administrative_area_level_2_short: '',
                 country_long: '', country_short: '', postal_code: '',
                 subpremise: '', premise: '', floor: '', room: ''
             };
@@ -1054,6 +1055,7 @@
                         case 'street_number': parsed.street_number = c.long_name; break;
                         case 'route': parsed.route = c.long_name; break;
                         case 'locality': parsed.locality = c.long_name; break;
+                        case 'postal_town': parsed.postal_town = c.long_name; break;
                         case 'sublocality_level_1':
                         case 'sublocality':
                             if (!parsed.locality) parsed.sublocality = c.long_name; break;
@@ -1061,7 +1063,9 @@
                             parsed.administrative_area_level_1_long = c.long_name;
                             parsed.administrative_area_level_1_short = c.short_name; break;
                         case 'administrative_area_level_2':
-                            parsed.administrative_area_level_2 = c.long_name; break;
+                            parsed.administrative_area_level_2 = c.long_name;
+                            parsed.administrative_area_level_2_long = c.long_name;
+                            parsed.administrative_area_level_2_short = c.short_name; break;
                         case 'country':
                             parsed.country_long = c.long_name;
                             parsed.country_short = c.short_name; break;
@@ -1117,18 +1121,10 @@
                 );
             }
 
-            var statePrimary = (config.formats && config.formats.state === 'short') ? components.administrative_area_level_1_short : components.administrative_area_level_1_long;
-            var stateAlt = (config.formats && config.formats.state === 'short') ? components.administrative_area_level_1_long : components.administrative_area_level_1_short;
-            var zipValue = components.postal_code;
-
-            setTimeout(function () {
-                if (config.selectors.state) {
-                    aga.setFieldValue(config.selectors.state, statePrimary, stateAlt, mainInput);
-                }
-                if (config.selectors.zip) {
-                    aga.setFieldValue(config.selectors.zip, zipValue, undefined, mainInput);
-                }
-            }, 500);
+            // Same country-aware mapping and re-render handling as the
+            // autocomplete path, so drag-to-update behaves identically.
+            var smartState = aga.getSmartState(components, countryCode, (config.formats || {}).state);
+            aga.scheduleStateZipFill(config, mainInput, smartState.primary, smartState.alt, components.postal_code);
         },
 
         updateLatLngFields: function (latLng, config, mainInput) {
@@ -1304,24 +1300,162 @@
 
                 // Smart country-aware state mapping
                 var smartState = aga.getSmartState(components, countryCode, (config.formats || {}).state);
-                var zipValue = components.postal_code;
 
-                // Delay state and postcode to allow framework re-render after country change.
-                setTimeout(function () {
-                    if (config.selectors.state) {
-                        aga.setFieldValue(config.selectors.state, smartState.primary, smartState.alt, mainInput);
-                    }
-                    if (config.selectors.zip) {
-                        aga.setFieldValue(config.selectors.zip, zipValue, undefined, mainInput);
-                    }
-                }, 500);
+                // State and postcode are written repeatedly until the framework
+                // stops re-rendering them — see scheduleStateZipFill.
+                aga.scheduleStateZipFill(config, mainInput, smartState.primary, smartState.alt, components.postal_code);
             }
         },
 
-        _warnedSelectors: {},
+        /**
+         * State/postcode fills waiting to be (re)applied.
+         *
+         * Setting the country makes the surrounding framework rebuild the state
+         * field — WooCommerce replaces the <select> on country_to_state_changed
+         * and again after every updated_checkout AJAX round, and the block
+         * checkout remounts it via React. Anything written before that lands is
+         * wiped, so a single fixed delay is a race we lose on slow sites.
+         * Instead we write on a short escalating schedule and again whenever the
+         * framework announces a re-render.
+         */
+        _pendingFills: [],
+        _refillHooksBound: false,
 
+        REFILL_DELAYS: [0, 150, 400, 800, 1500, 2500],
+
+        /**
+         * Queue the state and postcode writes for a freshly selected address.
+         */
+        scheduleStateZipFill: function (config, mainInput, statePrimary, stateAlt, zipValue) {
+            var entry = {
+                config: config,
+                mainInput: mainInput,
+                statePrimary: statePrimary,
+                stateAlt: stateAlt,
+                zipValue: zipValue,
+                stateWritten: null,
+                zipWritten: null,
+                stateTouched: false,
+                zipTouched: false
+            };
+
+            // One pending fill per input — a newer selection supersedes the old.
+            aga._pendingFills = aga._pendingFills.filter(function (e) {
+                return e.mainInput !== mainInput;
+            });
+            aga._pendingFills.push(entry);
+
+            aga.bindRefillHooks();
+
+            aga.REFILL_DELAYS.forEach(function (delay) {
+                setTimeout(function () { aga.applyPendingFill(entry); }, delay);
+            });
+
+            // Stop re-applying once the form has settled, so we never fight the
+            // customer's own corrections.
+            setTimeout(function () {
+                aga.cancelPendingFill(entry);
+            }, aga.REFILL_DELAYS[aga.REFILL_DELAYS.length - 1] + 500);
+        },
+
+        cancelPendingFill: function (entry) {
+            aga._pendingFills = aga._pendingFills.filter(function (e) { return e !== entry; });
+        },
+
+        /**
+         * Write a pending fill.
+         *
+         * The first write for a field always goes through — it has to replace
+         * whatever the address previously held (WooCommerce prefills saved
+         * addresses for logged-in customers). Every re-apply after that only
+         * touches a field that is empty or still holds our own value, so a
+         * customer correcting the state by hand keeps their choice.
+         */
+        applyPendingFill: function (entry) {
+            if (aga._pendingFills.indexOf(entry) === -1) return;
+
+            var selectors = entry.config.selectors || {};
+
+            if (selectors.state) {
+                var stateField = aga.getField(selectors.state, entry.mainInput);
+                if (stateField && (!entry.stateTouched || aga.isOverwritable(stateField, entry.stateWritten))) {
+                    entry.stateTouched = true;
+                    var wroteState = aga.setFieldValue(selectors.state, entry.statePrimary, entry.stateAlt, entry.mainInput);
+                    if (wroteState !== null) entry.stateWritten = String(wroteState);
+                }
+            }
+
+            if (selectors.zip) {
+                var zipField = aga.getField(selectors.zip, entry.mainInput);
+                if (zipField && (!entry.zipTouched || aga.isOverwritable(zipField, entry.zipWritten))) {
+                    entry.zipTouched = true;
+                    var wroteZip = aga.setFieldValue(selectors.zip, entry.zipValue, undefined, entry.mainInput);
+                    if (wroteZip !== null) entry.zipWritten = String(wroteZip);
+                }
+            }
+        },
+
+        isOverwritable: function (field, ourValue) {
+            var current = (field.value === undefined || field.value === null) ? '' : String(field.value).trim();
+            return current === '' || (ourValue !== null && current === ourValue);
+        },
+
+        /**
+         * Re-apply pending fills when WooCommerce re-renders the checkout.
+         * country_to_state_changed fires once the state field is rebuilt;
+         * updated_checkout fires after every checkout AJAX refresh.
+         */
+        bindRefillHooks: function () {
+            if (aga._refillHooksBound || typeof $ === 'undefined') return;
+            aga._refillHooksBound = true;
+
+            $(document.body).on('country_to_state_changed updated_checkout', function () {
+                if (!aga._pendingFills.length) return;
+                // Let the framework finish painting before we write.
+                setTimeout(function () {
+                    aga._pendingFills.slice().forEach(function (entry) {
+                        aga.applyPendingFill(entry);
+                    });
+                }, 50);
+            });
+        },
+
+        _warnedSelectors: {},
+        _warnedNoMatch: {},
+
+        /**
+         * Report a <select> that had no matching option.
+         *
+         * A silent no-match is the usual reason a checkout state field stays
+         * empty, so name the value we tried and show what the field accepts.
+         */
+        warnNoSelectMatch: function (selector, field, value, altValue) {
+            var key = selector + '|' + value + '|' + altValue;
+            if (aga._warnedNoMatch[key]) return;
+            aga._warnedNoMatch[key] = true;
+
+            var sample = [];
+            for (var i = 0; i < field.options.length && sample.length < 8; i++) {
+                if (field.options[i].value) {
+                    sample.push(field.options[i].value + ' = ' + field.options[i].text);
+                }
+            }
+
+            console.warn(
+                'Autocomplete Google Address: no option in "' + selector + '" matches "' + value + '"' +
+                (altValue ? ' (or "' + altValue + '")' : '') + ' — field left unchanged.',
+                { optionCount: field.options.length, sample: sample }
+            );
+        },
+
+        /**
+         * Write a value into a mapped field.
+         *
+         * @return {string|null} The value actually written, or null if nothing
+         *                       was written (field missing, or no option matched).
+         */
         setFieldValue: function (selector, value, altValue, context) {
-            if (!selector || value === undefined) return;
+            if (!selector || value === undefined) return null;
 
             var scope = context
                 ? (context.closest('form') || context.closest('.wpcf7-form, .wpforms-form, .gform_wrapper, .elementor-form, .frm_forms') || document)
@@ -1333,16 +1467,20 @@
                     aga._warnedSelectors[selector] = true;
                     console.warn('Autocomplete Google Address: Field not found for selector:', selector, '— check your form config.');
                 }
-                return;
+                return null;
             }
 
             var finalValue = value;
 
-            // Smart matching for <select> elements — if no option found, skip silently.
+            // Smart matching for <select> elements — if no option found, leave
+            // the field alone but say so in the console.
             if (field.tagName === 'SELECT') {
                 var matchedValue = aga.findSelectMatch(field, value, altValue);
                 if (matchedValue === null) {
-                    return;
+                    if (value || altValue) {
+                        aga.warnNoSelectMatch(selector, field, value, altValue);
+                    }
+                    return null;
                 }
                 finalValue = matchedValue;
             }
@@ -1359,9 +1497,18 @@
                 } else {
                     field.value = finalValue;
                 }
-                // Use jQuery trigger for WooCommerce/framework compatibility.
-                $(field).trigger('change');
-                return;
+
+                // Dispatch a real DOM event, not jQuery's .trigger(). The block
+                // checkout renders a React-controlled <select>, and React only
+                // listens for native events — a jQuery trigger sets the DOM
+                // value but leaves React's state stale, so the next render wipes
+                // it. Native events still reach jQuery handlers (jQuery binds
+                // through addEventListener), so classic checkout, select2 and
+                // selectWoo keep working off this same dispatch.
+                field.dispatchEvent(new Event('input', { bubbles: true }));
+                field.dispatchEvent(new Event('change', { bubbles: true }));
+
+                return finalValue;
             }
 
             if (field.tagName === 'TEXTAREA' && nativeTextareaValueSetter) {
@@ -1375,6 +1522,8 @@
             // Dispatch events that both React and vanilla JS listeners pick up.
             field.dispatchEvent(new Event('input', { bubbles: true }));
             field.dispatchEvent(new Event('change', { bubbles: true }));
+
+            return finalValue;
         },
 
         /**
@@ -1413,7 +1562,22 @@
                 if (altLower && optText === altLower) return options[i].value;
             }
 
-            // 5. Partial match — option text contains value or vice versa
+            // 5. Normalized exact match — strips accents, punctuation and the
+            //    administrative nouns Google adds but address forms leave out.
+            //    e.g. "Dhaka Division" -> "Dhaka", "Île-de-France" -> "Ile de France"
+            var valueNorm = aga.normalizeRegionName(value);
+            var altNorm = aga.normalizeRegionName(altValue);
+            if (valueNorm || altNorm) {
+                for (var i = 0; i < options.length; i++) {
+                    if (!options[i].value) continue;
+                    var textNorm = aga.normalizeRegionName(options[i].text);
+                    var optNorm = aga.normalizeRegionName(options[i].value);
+                    if (valueNorm && (textNorm === valueNorm || optNorm === valueNorm)) return options[i].value;
+                    if (altNorm && (textNorm === altNorm || optNorm === altNorm)) return options[i].value;
+                }
+            }
+
+            // 6. Partial match — option text contains value or vice versa
             //    e.g. "Dhaka" matches "Dhaka Division" or "Dhaka District"
             for (var i = 0; i < options.length; i++) {
                 var optText = options[i].text.toLowerCase().trim();
@@ -1426,8 +1590,29 @@
                 }
             }
 
-            // 6. No match found — return null (the raw value will be used as fallback)
+            // 7. No match found — caller leaves the field untouched and warns.
             return null;
+        },
+
+        /**
+         * Administrative nouns Google appends to region names that address
+         * forms (WooCommerce state lists in particular) usually omit.
+         */
+        _regionNoise: /\b(division|district|province|prefecture|governorate|region|state|county|city|municipality|metropolitan|department|departamento|distrito|provincia|estado|regione|regierungsbezirk)\b/g,
+
+        /**
+         * Normalize a region name for comparison: lowercase, strip accents and
+         * punctuation, drop administrative nouns, collapse whitespace.
+         */
+        normalizeRegionName: function (name) {
+            if (!name) return '';
+            var out = String(name).toLowerCase();
+            if (out.normalize) {
+                out = out.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            }
+            out = out.replace(/[^a-z0-9\s]/g, ' ');
+            out = out.replace(aga._regionNoise, ' ');
+            return out.replace(/\s+/g, ' ').trim();
         },
 
         // ---- Saved Addresses (Pro) ----
@@ -1608,7 +1793,7 @@
             // Default fallback chain (used when country not in this list)
             '_default': {
                 city:  ['locality', 'postal_town', 'sublocality_level_1', 'sublocality', 'administrative_area_level_2', 'administrative_area_level_3'],
-                state: ['administrative_area_level_1']
+                state: ['administrative_area_level_1', 'administrative_area_level_2']
             },
             // Bangladesh — city=district (admin_level_2), state=division (admin_level_1)
             'BD': {
@@ -1779,8 +1964,13 @@
             var suffix = (format === 'short') ? 'short' : 'long';
             var altSuffix = (format === 'short') ? 'long' : 'short';
 
-            for (var i = 0; i < rules.state.length; i++) {
-                var key = rules.state[i];
+            // Try the country's own chain first, then the default chain. Google
+            // omits administrative_area_level_1 for plenty of places (and for
+            // city-level picks); an approximate region beats an empty field.
+            var chain = rules.state.concat(aga.countryMappingRules['_default'].state);
+
+            for (var i = 0; i < chain.length; i++) {
+                var key = chain[i];
                 var val = aga._getParsedValue(parsed, key, suffix);
                 if (val) return { primary: val, alt: aga._getParsedValue(parsed, key, altSuffix) || val };
             }

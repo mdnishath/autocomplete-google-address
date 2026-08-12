@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google address autocomplete, woocommerce address, address validation, map picker, checkout autocomplete
 Requires at least: 5.4
 Tested up to: 7.0.1
-Stable tag: 5.4.2
+Stable tag: 5.5.0
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -290,6 +290,15 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 
 == Changelog ==
 
+= 5.5.0 =
+* FIX: State and Country now fill correctly on the WooCommerce block checkout. The block checkout renders a React-controlled `<select>`, and the plugin was announcing its change with a jQuery-only event that React never sees -- the value was written to the DOM and then silently discarded on the next re-render. The plugin now dispatches real DOM events, which React, jQuery, select2 and selectWoo all receive.
+* FIX: State and postcode no longer lost to a checkout re-render. WooCommerce rebuilds the state field whenever the country changes, and the previous single fixed 500ms delay was a race that slower sites and longer state lists lost. Values are now re-applied on a short schedule and again on WooCommerce's `country_to_state_changed` and `updated_checkout` events, while never overwriting a value the customer typed themselves.
+* FIX: Both the classic and block checkout field sets are now registered on the checkout page. Detection previously scanned the checkout page content for the `woocommerce/checkout` block, which missed block themes using a template part, page builders, and plugins that swap the checkout template -- and a wrong guess meant no autocomplete at all.
+* NEW: State Format and Country Format settings for the WooCommerce checkout (Settings -> WooCommerce). Defaults to Short Name, which is correct for a standard checkout because WooCommerce stores ISO codes; choose Long Name if your theme or another plugin has replaced these dropdowns with plain text fields.
+* IMPROVED: Region names are now matched with accents, punctuation and administrative nouns normalised away, so Google values line up with store dropdowns that spell them differently -- "Dhaka Division" now matches "Dhaka", and "Ile-de-France" matches regardless of accents.
+* IMPROVED: The state field falls back to the district/county component when Google returns no state for the selected place, instead of leaving the field empty.
+* IMPROVED: When no dropdown option matches, the console now reports the selector, the value tried, and a sample of the accepted options. Previously this failed silently, which made an empty state field impossible to diagnose.
+
 = 5.4.2 =
 * COMPATIBILITY: Tested and verified against WordPress 7.0.1. No code changes required — the plugin uses no deprecated or removed APIs.
 * MAINTENANCE: Bumped "Tested up to" to 7.0.1.
@@ -368,6 +377,9 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 * Initial release.
 
 == Upgrade Notice ==
+
+= 5.5.0 =
+Fixes State and Country not filling on the WooCommerce checkout, including the block checkout. Recommended for all WooCommerce stores.
 
 = 5.4.2 =
 Verified compatible with WordPress 7.0.1. Recommended maintenance update.
