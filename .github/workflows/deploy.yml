@@ -59,6 +59,21 @@ jobs:
             echo "release=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Deploy to WordPress.org
+        if: steps.version.outputs.release == 'true'
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SLUG: autocomplete-google-address
+          # Without this the action derives the version from GITHUB_REF by
+          # stripping `refs/tags/`, which only works on a tag push — on a branch
+          # push it resolves to `refs/heads` and the SVN checkout fails.
+          VERSION: ${{ steps.version.outputs.version }}
+
+      # Tag only after WordPress.org has accepted the release. Tagging first
+      # would leave a tag behind on a failed deploy, and the guard above would
+      # then treat the version as released and never retry it.
       - name: Tag the release
         if: steps.version.outputs.release == 'true'
         env:
@@ -69,14 +84,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "v$VERSION" -m "v$VERSION"
           git push origin "v$VERSION"
-
-      - name: Deploy to WordPress.org
-        if: steps.version.outputs.release == 'true'
-        uses: 10up/action-wordpress-plugin-deploy@stable
-        env:
-          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-          SLUG: autocomplete-google-address
 
       - name: Summary
         run: |
