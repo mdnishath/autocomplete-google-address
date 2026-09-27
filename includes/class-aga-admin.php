@@ -219,7 +219,7 @@ class AGA_Admin {
 
     /**
      * Handles the Activate / Deactivate form posts from the License page
-     * (admin-post.php?action=aga_license_activate|aga_license_deactivate).
+     * (admin-post.php?action=aga_license_activate|aga_license_trial|aga_license_deactivate).
      *
      * @since 5.6.0
      */
@@ -237,6 +237,18 @@ class AGA_Admin {
             $notice = is_wp_error( $result )
                 ? array( 'type' => 'error', 'message' => $result->get_error_message() )
                 : array( 'type' => 'success', 'message' => __( 'License activated. Pro features are unlocked on this site.', 'autocomplete-google-address' ) );
+        } elseif ( 'aga_license_trial' === $action ) {
+            check_admin_referer( 'aga_license_trial' );
+            $email  = isset( $_POST['aga_trial_email'] ) ? sanitize_email( wp_unslash( $_POST['aga_trial_email'] ) ) : '';
+            $result = AGA_License::start_trial( $email );
+            $days   = AGA_License::trial_info()['days'];
+            $notice = is_wp_error( $result )
+                ? array( 'type' => 'error', 'message' => $result->get_error_message() )
+                : array(
+                    'type'    => 'success',
+                    /* translators: %d: trial length in days */
+                    'message' => sprintf( __( 'Your %d-day free trial has started — every Pro feature is unlocked on this site. The trial key was emailed to you.', 'autocomplete-google-address' ), $days ),
+                );
         } elseif ( 'aga_license_deactivate' === $action ) {
             check_admin_referer( 'aga_license_deactivate' );
             $result = AGA_License::deactivate();

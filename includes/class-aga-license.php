@@ -483,6 +483,7 @@ class AGA_License {
 			'expiresAt'      => isset( $license['expiresAt'] ) && is_string( $license['expiresAt'] ) ? sanitize_text_field( $license['expiresAt'] ) : null,
 			'maxActivations' => isset( $license['maxActivations'] ) && is_numeric( $license['maxActivations'] ) ? (int) $license['maxActivations'] : null,
 			'activations'    => isset( $license['activations'] ) && is_numeric( $license['activations'] ) ? (int) $license['activations'] : null,
+			'trial'          => ! empty( $license['trial'] ),
 		);
 	}
 
@@ -532,6 +533,130 @@ class AGA_License {
 			)
 		);
 
+		return true;
+	}
+
+	/* --------------------------------------------------------------------
+	 * Free trial
+	 * ------------------------------------------------------------------ */
+
+	/** Option set once this site has started (or was refused) a free trial. */
+	const TRIAL_USED_OPTION = 'aga_trial_used';
+
+	/**
+	 * Whether the license server offers a free trial right now, and its length.
+	 * Cached for 12 hours; assumes the usual 7-day trial when the server can't be reached.
+	 *
+	 * @return array{available: bool, days: int}
+	 */
+	public static function trial_info() {
+		$cached = get_transient( 'aga_trial_info' );
+		if ( is_array( $cached ) && isset( $cached['available'], $cached['days'] ) ) {
+			return $cached;
+		}
+		$info     = array(
+			'available' => true,
+			'days'      => 7,
+		);
+		$response = wp_remote_get(
+			self::base_url() . '/api/license/trial-info?product=' . rawurlencode( self::PRODUCT ),
+			array( 'timeout' => self::REFRESH_TIMEOUT )
+		);
+		$body     = is_wp_error( $response ) ? null : json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( is_array( $body ) && isset( $body['ok'] ) && true === $body['ok'] ) {
+			$info = array(
+				'available' => ! empty( $body['available'] ),
+				'days'      => isset( $body['days'] ) && is_numeric( $body['days'] ) ? max( 1, (int) $body['days'] ) : 7,
+			);
+			set_transient( 'aga_trial_info', $info, 12 * HOUR_IN_SECONDS );
+		} else {
+			set_transient( 'aga_trial_info', $info, HOUR_IN_SECONDS );
+		}
+		return $info;
+	}
+
+	/**
+	 * Can this site start a free trial? (No key, no Freemius Pro, not used before, offered.)
+	 *
+	 * @return bool
+	 */
+	public static function can_start_trial() {
+		if ( self::has_key() || get_option( self::TRIAL_USED_OPTION ) || aga_pro_via_freemius() ) {
+			return false;
+		}
+		$info = self::trial_info();
+		return $info['available'];
+	}
+
+	/**
+	 * Is the stored key a free trial?
+	 *
+	 * @return bool
+	 */
+	public static function is_trial() {
+		$data = self::get_data();
+		return '' !== $data['key'] && ! empty( $data['license']['trial'] );
+	}
+
+	/**
+	 * Start the free trial for this site: the server issues a trial key, activates it here
+	 * and emails it. One trial per site and per email address.
+	 *
+	 * @param string $email Where the trial key and the reminders are sent.
+	 * @return true|WP_Error
+	 */
+	public static function start_trial( $email ) {
+		$email = sanitize_email( $email );
+		if ( ! is_email( $email ) ) {
+			return new WP_Error( 'bad_email', __( 'Enter a valid email address — your trial key is sent there.', 'autocomplete-google-address' ) );
+		}
+		if ( self::has_key() ) {
+			return new WP_Error( 'has_key', __( 'This site already has a license key.', 'autocomplete-google-address' ) );
+		}
+
+		$name   = (string) get_bloginfo( 'name' );
+		$name   = function_exists( 'mb_substr' ) ? mb_substr( $name, 0, 100 ) : substr( $name, 0, 100 );
+		$body   = array(
+			'product'  => self::PRODUCT,
+			'deviceId' => self::device_id(),
+			'email'    => $email,
+		);
+		if ( '' !== trim( $name ) ) {
+			$body['name']       = $name;
+			$body['deviceName'] = $name;
+		}
+		$result = self::request( 'trial', $body );
+
+		if ( $result['network_error'] ) {
+			return new WP_Error( 'network', self::message_from( $result, __( 'Could not reach the license server. Please try again.', 'autocomplete-google-address' ) ) );
+		}
+		if ( empty( $result['body']['ok'] ) || empty( $result['body']['token'] ) || empty( $result['body']['key'] ) ) {
+			$code = isset( $result['body']['error'] ) ? sanitize_key( $result['body']['error'] ) : 'error';
+			if ( 'trial_used' === $code ) {
+				update_option( self::TRIAL_USED_OPTION, time(), false );
+			}
+			return new WP_Error( $code, self::message_from( $result, __( 'The free trial could not be started.', 'autocomplete-google-address' ) ) );
+		}
+
+		$key   = self::normalise_key( (string) $result['body']['key'] );
+		$token = (string) $result['body']['token'];
+		if ( false === self::verify_token( $token, $key ) ) {
+			return new WP_Error( 'bad_token', __( 'The license server answered, but its response could not be verified for this site. Please contact support.', 'autocomplete-google-address' ) );
+		}
+
+		update_option( self::TRIAL_USED_OPTION, time(), false );
+		self::save_data(
+			array(
+				'key'          => $key,
+				'token'        => $token,
+				'license'      => self::sanitize_license_info( $result['body']['license'] ?? null ),
+				'error'        => '',
+				'message'      => '',
+				'checked_at'   => time(),
+				'last_ok'      => true,
+				'validated_at' => time(),
+			)
+		);
 		return true;
 	}
 
@@ -645,6 +770,7 @@ class AGA_License {
 			'max'         => $data['license']['maxActivations'] ?? null,
 			'message'     => $data['message'],
 			'validated'   => (int) $data['validated_at'],
+			'trial'       => ! empty( $data['license']['trial'] ),
 		);
 
 		if ( '' === $data['key'] ) {
@@ -718,9 +844,19 @@ class AGA_License {
 		$class       = '';
 		$text        = '';
 
-		if ( 'expired' === $status['state'] ) {
+		$trial = $status['trial'];
+		if ( 'expired' === $status['state'] && $trial ) {
+			$class = 'notice-error';
+			$text  = __( 'Your Autocomplete Google Address Pro free trial has ended, so Pro features are switched off. Upgrade to turn them back on — your key stays the same.', 'autocomplete-google-address' );
+		} elseif ( 'expired' === $status['state'] ) {
 			$class = 'notice-error';
 			$text  = __( 'Your Autocomplete Google Address Pro license has expired, so Pro features are switched off.', 'autocomplete-google-address' );
+		} elseif ( 'active' === $status['state'] && $trial && $status['expires'] && $status['expires'] - time() < 3 * DAY_IN_SECONDS ) {
+			$class = 'notice-warning';
+			/* translators: %s: trial end date */
+			$text = sprintf( __( 'Your Autocomplete Google Address Pro free trial ends on %s. Upgrade to keep Pro features — your key stays the same.', 'autocomplete-google-address' ), date_i18n( get_option( 'date_format' ), $status['expires'] ) );
+		} elseif ( 'active' === $status['state'] && $trial ) {
+			$text = '';
 		} elseif ( 'invalid' === $status['state'] ) {
 			$class = 'notice-warning';
 			$text  = '' !== $status['message'] ? $status['message'] : __( 'Your Autocomplete Google Address Pro license could not be verified.', 'autocomplete-google-address' );
@@ -738,7 +874,7 @@ class AGA_License {
 			esc_attr( $class ),
 			esc_html( $text ),
 			esc_url( $renew_url ),
-			esc_html__( 'Renew license', 'autocomplete-google-address' ),
+			$trial ? esc_html__( 'Upgrade to Pro', 'autocomplete-google-address' ) : esc_html__( 'Renew license', 'autocomplete-google-address' ),
 			esc_url( $license_url ),
 			esc_html__( 'License page', 'autocomplete-google-address' )
 		);
@@ -845,6 +981,21 @@ function aga_freemius_checkout_url() {
 }
 
 /**
+ * Load Freemius at all? While Freemius sales are off, only on sites already connected to it
+ * (its customers, who keep Pro through it). Every other site never loads it, so no Freemius
+ * menu, page, opt-in or notice appears.
+ *
+ * @return bool
+ */
+function aga_freemius_needed() {
+	if ( aga_freemius_sales_enabled() ) {
+		return true;
+	}
+	$accounts = get_option( 'fs_accounts' );
+	return is_array( $accounts ) && ! empty( $accounts['sites']['form-autocomplete-nish'] );
+}
+
+/**
  * Whether Pro is also sold through Freemius (see AGA_License::FREEMIUS_SALES).
  *
  * @return bool
@@ -884,19 +1035,41 @@ function aga_render_upgrade_options( $variant = 'inline', $show_note = true ) {
 	echo '<div class="aga-upgrade-options">';
 
 	if ( AGA_License::has_key() ) {
+		$is_trial = AGA_License::is_trial();
 		printf(
 			'<a href="%1$s" target="_blank" rel="noopener" style="%2$s">%3$s<span style="%4$s">%5$s</span></a>',
 			esc_url( AGA_License::renew_url() ),
 			esc_attr( $btn . $size ),
-			esc_html__( 'Renew your license', 'autocomplete-google-address' ),
+			$is_trial ? esc_html__( 'Upgrade to Pro', 'autocomplete-google-address' ) : esc_html__( 'Renew your license', 'autocomplete-google-address' ),
 			esc_attr( $sub ),
-			esc_html__( 'Any card, bKash or Nagad · same key, time added', 'autocomplete-google-address' )
+			$is_trial
+				? esc_html__( 'Any card, worldwide · your trial key becomes a full license', 'autocomplete-google-address' )
+				: esc_html__( 'Any card, bKash or Nagad · same key, time added', 'autocomplete-google-address' )
 		);
 		echo '</div>';
 		return;
 	}
 
 	echo '<div style="display:flex;flex-wrap:wrap;gap:10px;">';
+	// The License page has its own trial form right above, so no second trial button there.
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only page check.
+	$on_license_page = isset( $_GET['page'] ) && 'aga-license' === $_GET['page'];
+	if ( ! $on_license_page && AGA_License::can_start_trial() ) {
+		$trial = AGA_License::trial_info();
+		$ghost = $on_dark
+			? $btn_base . 'background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.85);'
+			: $btn_base . 'background:#fff;color:#4361ee;border:1px solid #4361ee;';
+		$gsub  = $on_dark ? 'font-size:12px;font-weight:400;color:rgba(255,255,255,0.85);' : 'font-size:12px;font-weight:400;color:#5b6477;';
+		printf(
+			'<a href="%1$s" style="%2$s">%3$s<span style="%4$s">%5$s</span></a>',
+			esc_url( aga_license_page_url() . '#aga-trial' ),
+			esc_attr( $ghost . $size ),
+			/* translators: %d: trial length in days */
+			esc_html( sprintf( __( 'Start %d-day free trial', 'autocomplete-google-address' ), $trial['days'] ) ),
+			esc_attr( $gsub ),
+			esc_html__( 'No card needed · every Pro feature', 'autocomplete-google-address' )
+		);
+	}
 	printf(
 		'<a href="%1$s" target="_blank" rel="noopener" style="%2$s">%3$s<span style="%4$s">%5$s</span></a>',
 		esc_url( AGA_License::buy_url() ),

@@ -33,6 +33,18 @@ $aga_state_labels = array(
 	'none'    => array( __( 'No license key', 'autocomplete-google-address' ), '#646970', 'dashicons-lock' ),
 );
 $aga_state = isset( $aga_state_labels[ $aga_status['state'] ] ) ? $aga_state_labels[ $aga_status['state'] ] : $aga_state_labels['none'];
+
+// Free trial: its own wording, and an upgrade (same key) instead of a renewal.
+$aga_is_trial  = $aga_status['trial'];
+$aga_days_left = ( 'active' === $aga_status['state'] && $aga_status['expires'] ) ? max( 0, (int) ceil( ( $aga_status['expires'] - time() ) / DAY_IN_SECONDS ) ) : 0;
+if ( $aga_is_trial && 'active' === $aga_status['state'] ) {
+	/* translators: %d: days left in the free trial */
+	$aga_state = array( sprintf( _n( 'Free trial — %d day left', 'Free trial — %d days left', $aga_days_left, 'autocomplete-google-address' ), $aga_days_left ), '#dba617', 'dashicons-clock' );
+} elseif ( $aga_is_trial && 'expired' === $aga_status['state'] ) {
+	$aga_state = array( __( 'Free trial ended', 'autocomplete-google-address' ), '#d63638', 'dashicons-warning' );
+}
+$aga_can_trial = AGA_License::can_start_trial();
+$aga_trial     = AGA_License::trial_info();
 ?>
 <div class="wrap" id="aga-settings-page">
 	<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
@@ -65,7 +77,7 @@ $aga_state = isset( $aga_state_labels[ $aga_status['state'] ] ) ? $aga_state_lab
 						<?php if ( '' !== $aga_status['plan'] ) : ?>
 							<tr>
 								<th scope="row"><?php esc_html_e( 'Plan', 'autocomplete-google-address' ); ?></th>
-								<td><?php echo esc_html( $aga_status['plan'] ); ?></td>
+								<td><?php echo esc_html( $aga_is_trial ? __( 'Free trial', 'autocomplete-google-address' ) : $aga_status['plan'] ); ?></td>
 							</tr>
 						<?php endif; ?>
 						<tr>
@@ -117,7 +129,14 @@ $aga_state = isset( $aga_state_labels[ $aga_status['state'] ] ) ? $aga_state_lab
 					</div>
 				<?php endif; ?>
 
-				<?php if ( 'expired' === $aga_status['state'] ) : ?>
+				<?php if ( $aga_is_trial ) : ?>
+					<p style="margin-top:16px;">
+						<a href="<?php echo esc_url( AGA_License::renew_url() ); ?>" class="button button-primary button-hero" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Upgrade to Pro', 'autocomplete-google-address' ); ?></a>
+					</p>
+					<p class="description">
+						<?php esc_html_e( 'Pay with Visa, Mastercard or Amex from any country (or bKash / Nagad). Your trial key becomes a full license, so nothing on this site needs to change.', 'autocomplete-google-address' ); ?>
+					</p>
+				<?php elseif ( 'expired' === $aga_status['state'] ) : ?>
 					<p>
 						<a href="<?php echo esc_url( AGA_License::renew_url() ); ?>" class="button button-primary" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Renew license', 'autocomplete-google-address' ); ?></a>
 					</p>
@@ -135,6 +154,33 @@ $aga_state = isset( $aga_state_labels[ $aga_status['state'] ] ) ? $aga_state_lab
 			<?php endif; ?>
 		</div>
 	</div>
+
+	<?php if ( $aga_can_trial ) : ?>
+		<div class="aga-card" id="aga-trial">
+			<div class="aga-card-header">
+				<?php /* translators: %d: trial length in days */ ?>
+				<h2><?php echo esc_html( sprintf( __( 'Try Pro free for %d days', 'autocomplete-google-address' ), $aga_trial['days'] ) ); ?></h2>
+			</div>
+			<div class="aga-card-body">
+				<p><?php esc_html_e( 'Every Pro feature, on this site, with no card and no payment details. When the trial ends, Pro switches off unless you upgrade — the free features keep working.', 'autocomplete-google-address' ); ?></p>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="aga_license_trial" />
+					<?php wp_nonce_field( 'aga_license_trial' ); ?>
+					<div class="aga-field-group">
+						<label for="aga_trial_email"><strong><?php esc_html_e( 'Your email', 'autocomplete-google-address' ); ?></strong></label>
+						<div class="aga-api-key-row">
+							<input type="email" id="aga_trial_email" name="aga_trial_email" value="<?php echo esc_attr( (string) get_option( 'admin_email' ) ); ?>" class="regular-text" required />
+							<?php /* translators: %d: trial length in days */ ?>
+							<button type="submit" class="button button-primary"><?php echo esc_html( sprintf( __( 'Start %d-day free trial', 'autocomplete-google-address' ), $aga_trial['days'] ) ); ?></button>
+						</div>
+						<p class="description">
+							<?php esc_html_e( 'Your trial key and a reminder before the trial ends are sent to this email. This email and your site address are sent to mdnishath.com to start the trial. One free trial per website.', 'autocomplete-google-address' ); ?>
+						</p>
+					</div>
+				</form>
+			</div>
+		</div>
+	<?php endif; ?>
 
 	<?php if ( 'active' !== $aga_status['state'] && ! $aga_freemius_paying ) : ?>
 		<div class="aga-card">
@@ -175,15 +221,17 @@ $aga_state = isset( $aga_state_labels[ $aga_status['state'] ] ) ? $aga_state_lab
 					</div>
 				</form>
 
-				<p class="description">
-					<?php
-					printf(
-						/* translators: %s: link to the Plugins screen */
-						esc_html__( 'Have a Freemius license key instead? Activate it from %s → Autocomplete Google Address → Activate License.', 'autocomplete-google-address' ),
-						'<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">' . esc_html__( 'Plugins', 'autocomplete-google-address' ) . '</a>'
-					);
-					?>
-				</p>
+				<?php if ( function_exists( 'google_autocomplete' ) ) : ?>
+					<p class="description">
+						<?php
+						printf(
+							/* translators: %s: link to the Plugins screen */
+							esc_html__( 'Have a Freemius license key instead? Activate it from %s → Autocomplete Google Address → Activate License.', 'autocomplete-google-address' ),
+							'<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">' . esc_html__( 'Plugins', 'autocomplete-google-address' ) . '</a>'
+						);
+						?>
+					</p>
+				<?php endif; ?>
 			</div>
 		</div>
 	<?php endif; ?>

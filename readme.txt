@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google address autocomplete, woocommerce address, address validation, map picker, checkout autocomplete
 Requires at least: 5.4
 Tested up to: 7.1
-Stable tag: 5.6.2
+Stable tag: 5.7.0
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -277,7 +277,7 @@ Buy a license at https://mdnishath.com/buy/autocomplete-google-address -- pay wi
 
 = Is there a free trial? =
 
-The free version is fully usable with no time limit, so you can try the plugin on your site before upgrading to Pro.
+Yes. Go to Google Address -> License and click "Start 7-day free trial" -- no card and no payment details. Every Pro feature is unlocked on that site for 7 days; afterwards Pro switches off unless you upgrade, and the free features keep working. One free trial per website.
 
 == Screenshots ==
 
@@ -305,10 +305,14 @@ Handles Pro purchases, trials and license activation for customers who buy throu
 Terms: https://freemius.com/terms/ - Privacy: https://freemius.com/privacy/
 
 = mdnishath.com license server =
-Used only if you enter a license key bought on mdnishath.com (Google Address -> License). The key, the product name and your site's address are sent to https://mdnishath.com when you activate or deactivate the key and when the plugin re-checks it (every 15 minutes while the admin is in use, hourly in the background). No visitor data is sent.
+Used only if you start the free trial or enter a license key bought on mdnishath.com (Google Address -> License). Starting the trial sends your site's address and the email you enter. The key, the product name and your site's address are sent to https://mdnishath.com when you activate or deactivate the key and when the plugin re-checks it (every 15 minutes while the admin is in use, hourly in the background). No visitor data is sent.
 Terms: https://mdnishath.com/terms - Privacy: https://mdnishath.com/privacy
 
 == Changelog ==
+
+= 5.7.0 =
+* NEW: 7-day free trial of Pro, started from Google Address -> License with one click -- no card or payment details. The trial key is emailed, a reminder arrives before it ends, and upgrading turns the same key into a full license (nothing to re-enter). One trial per website.
+* CHANGED: While Pro is sold on mdnishath.com, the Freemius SDK is only loaded on sites already connected to Freemius, so new installs see no Freemius menus, opt-in or pages. Existing Freemius customers keep Pro.
 
 = 5.6.2 =
 * CHANGED: Pro is sold on mdnishath.com, where any Visa, Mastercard or Amex card from any country is accepted (plus bKash and Nagad), with the license key emailed instantly. Upgrade links go there; the Freemius checkout and trial offer are paused. Customers who bought through Freemius keep Pro exactly as before.
@@ -411,6 +415,9 @@ Terms: https://mdnishath.com/terms - Privacy: https://mdnishath.com/privacy
 * Initial release.
 
 == Upgrade Notice ==
+
+= 5.7.0 =
+Try every Pro feature free for 7 days, no card needed: Google Address -> License -> Start free trial.
 
 = 5.6.2 =
 Pro licenses are now bought on mdnishath.com with any card worldwide. Existing Freemius customers are not affected.
