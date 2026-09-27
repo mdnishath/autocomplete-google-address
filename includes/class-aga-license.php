@@ -47,8 +47,11 @@ class AGA_License {
 	/** Seconds before retrying after a failed (network) check. */
 	const RETRY_INTERVAL = 3600;
 
-	/** HTTP timeout for license server calls. */
+	/** HTTP timeout for license server calls the user is waiting on (activate / deactivate). */
 	const HTTP_TIMEOUT = 10;
+
+	/** Shorter timeout for the background daily check, which can run during an admin page load. */
+	const REFRESH_TIMEOUT = 5;
 
 	/**
 	 * Per-request cache of the token check.
@@ -365,15 +368,16 @@ class AGA_License {
 	/**
 	 * POST to the license server.
 	 *
-	 * @param string $action activate|validate|deactivate.
-	 * @param array  $body   JSON body.
+	 * @param string $action  activate|validate|deactivate.
+	 * @param array  $body    JSON body.
+	 * @param int    $timeout Seconds.
 	 * @return array { network_error: bool, status: int, body: array }
 	 */
-	private static function request( $action, array $body ) {
+	private static function request( $action, array $body, $timeout = self::HTTP_TIMEOUT ) {
 		$response = wp_remote_post(
 			self::base_url() . '/api/license/' . $action,
 			array(
-				'timeout' => self::HTTP_TIMEOUT,
+				'timeout' => $timeout,
 				'headers' => array(
 					'Content-Type' => 'application/json',
 					'Accept'       => 'application/json',
@@ -543,7 +547,7 @@ class AGA_License {
 		$data['checked_at'] = time();
 		self::save_data( $data );
 
-		$result = self::request( 'validate', self::base_body( $data['key'] ) );
+		$result = self::request( 'validate', self::base_body( $data['key'] ), self::REFRESH_TIMEOUT );
 
 		if ( $result['network_error'] ) {
 			// Keep the stored token; it stays valid until its chk.
