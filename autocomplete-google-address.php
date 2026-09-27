@@ -4,7 +4,7 @@
  * Plugin Name: Autocomplete Google Address (Premium)
  * Plugin URI:        https://wordpress.org/plugins/autocomplete-google-address/
  * Description:       Add Google Places address autocomplete to any existing form in WordPress using a selector-based mapping builder.
- * Version:           5.6.0
+ * Version:           5.6.1
  * Author:            Md Nishath Khandakar
  * Author URI:        https://profiles.wordpress.org/nishatbd31/
  * License:           GPL-2.0-or-later
@@ -22,11 +22,14 @@ if ( !defined( 'WPINC' ) ) {
  */
 require_once dirname( __FILE__ ) . '/includes/class-aga-license.php';
 AGA_License::init( __FILE__ );
-// Re-validate our key online every few hours (hourly after a failure) on admin
-// loads, before deciding below whether Freemius is needed. WP-Cron covers sites
-// whose admin is rarely opened.
+// Re-validate our key online every 15 minutes on admin loads (hourly after a
+// failure), before deciding below whether Freemius is needed; the License page
+// always asks the server, so a revoked key shows as revoked there immediately.
+// WP-Cron covers sites whose admin is rarely opened.
 if ( is_admin() && !wp_doing_cron() ) {
-    AGA_License::maybe_refresh();
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only page check.
+    $aga_on_license_page = isset( $_GET['page'] ) && 'aga-license' === $_GET['page'];
+    AGA_License::maybe_refresh( false, ( $aga_on_license_page ? 10 : null ) );
 }
 // Customers with a valid mdnishath.com license don't use Freemius at all: skip its
 // init so none of its UI (opt-in, account, pricing, upgrade prompts) is shown.
@@ -105,7 +108,7 @@ add_action( 'init', 'aga_skip_freemius_takeover', 1 );
 /**
  * Currently plugin version.
  */
-define( 'AGA_VERSION', '5.6.0' );
+define( 'AGA_VERSION', '5.6.1' );
 /**
  * Plugin directory path.
  */

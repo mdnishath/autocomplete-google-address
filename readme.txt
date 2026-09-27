@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google address autocomplete, woocommerce address, address validation, map picker, checkout autocomplete
 Requires at least: 5.4
 Tested up to: 7.1
-Stable tag: 5.6.0
+Stable tag: 5.6.1
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -301,10 +301,13 @@ Handles Pro purchases, trials and license activation for customers who buy throu
 Terms: https://freemius.com/terms/ - Privacy: https://freemius.com/privacy/
 
 = mdnishath.com license server =
-Used only if you enter a license key bought on mdnishath.com (Google Address -> License). The key, the product name and your site's address are sent to https://mdnishath.com when you activate or deactivate the key and when the plugin re-checks it in the background every few hours. No visitor data is sent.
+Used only if you enter a license key bought on mdnishath.com (Google Address -> License). The key, the product name and your site's address are sent to https://mdnishath.com when you activate or deactivate the key and when the plugin re-checks it (every 15 minutes while the admin is in use, hourly in the background). No visitor data is sent.
 Terms: https://mdnishath.com/terms - Privacy: https://mdnishath.com/privacy
 
 == Changelog ==
+
+= 5.6.1 =
+* IMPROVED: A license revoked, expired or moved on mdnishath.com now switches Pro off within 15 minutes of admin use (hourly in the background), and the License page always checks and shows the current status. A temporary network problem still never switches Pro off.
 
 = 5.6.0 =
 * NEW: Pay in your own currency. Pro licenses can now also be bought on mdnishath.com with bKash, Nagad, Rocket, local bank cards or any Visa / Mastercard / Amex card, charged in BDT. Enter the key under Google Address -> License. Existing Freemius purchases keep working exactly as before.
@@ -401,6 +404,9 @@ Terms: https://mdnishath.com/terms - Privacy: https://mdnishath.com/privacy
 * Initial release.
 
 == Upgrade Notice ==
+
+= 5.6.1 =
+License status from mdnishath.com is checked more often, so renewals and changes show up within minutes.
 
 = 5.6.0 =
 Adds local-currency licenses (bKash, Nagad, cards in BDT) alongside Freemius, a License page, and makes the Freemius trial unlock Pro.

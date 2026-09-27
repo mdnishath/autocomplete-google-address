@@ -41,15 +41,15 @@ class AGA_License {
 	/** WP-Cron hook for the background refresh (hook name kept from the daily schedule). */
 	const CRON_HOOK = 'aga_license_daily_refresh';
 
-	/** How often WP-Cron re-validates the key. */
-	const CRON_RECURRENCE = 'twicedaily';
+	/** How often WP-Cron re-validates the key (sites whose admin is rarely opened). */
+	const CRON_RECURRENCE = 'hourly';
 
 	/**
-	 * Seconds between online validations after a successful check. A license revoked,
-	 * expired or moved on mdnishath.com takes effect within this time (offline, the
-	 * signed token keeps working until its `chk`).
+	 * Seconds between online validations on admin page loads. A license revoked, expired
+	 * or moved on mdnishath.com switches Pro off within this time; the License page always
+	 * asks the server. Offline, the signed token keeps working until its `chk`.
 	 */
-	const REFRESH_INTERVAL = 6 * HOUR_IN_SECONDS;
+	const REFRESH_INTERVAL = 15 * MINUTE_IN_SECONDS;
 
 	/** Seconds before retrying after a failed (network) check. */
 	const RETRY_INTERVAL = 3600;
@@ -552,17 +552,20 @@ class AGA_License {
 	}
 
 	/**
-	 * Refresh the token online if due (every few hours, hourly after a failure).
+	 * Refresh the token online if due (every 15 minutes on admin loads, hourly after a
+	 * failure).
 	 *
-	 * @param bool $force Ignore the throttle.
+	 * @param bool     $force   Ignore the throttle.
+	 * @param int|null $max_age Re-check when the last check is older than this many seconds
+	 *                          (overrides the normal interval, e.g. on the License page).
 	 */
-	public static function maybe_refresh( $force = false ) {
+	public static function maybe_refresh( $force = false, $max_age = null ) {
 		$data = self::get_data();
 		if ( '' === $data['key'] ) {
 			return;
 		}
 
-		$interval = $data['last_ok'] ? self::REFRESH_INTERVAL : self::RETRY_INTERVAL;
+		$interval = null !== $max_age ? (int) $max_age : ( $data['last_ok'] ? self::REFRESH_INTERVAL : self::RETRY_INTERVAL );
 		if ( ! $force && ( time() - (int) $data['checked_at'] ) < $interval ) {
 			return;
 		}
@@ -602,7 +605,7 @@ class AGA_License {
 			$data['token']   = '';
 			$data['error']   = isset( $result['body']['error'] ) ? sanitize_key( $result['body']['error'] ) : 'invalid';
 			$data['message'] = sanitize_text_field( self::message_from( $result, __( 'This license is no longer valid.', 'autocomplete-google-address' ) ) );
-			$data['last_ok'] = true; // A definite answer: re-check daily, not hourly.
+			$data['last_ok'] = true; // A definite answer: back to the normal interval.
 			self::save_data( $data );
 			return;
 		}
