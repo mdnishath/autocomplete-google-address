@@ -11,7 +11,8 @@ defined( 'ABSPATH' ) || exit;
 global $post;
 
 $is_paying = aga_is_pro();
-$checkout_url = aga_checkout_url();
+// "Pro" badges lead to the License page, which shows both ways to buy.
+$checkout_url = aga_license_page_url();
 
 // Get saved values
 $mode              = 'smart_mapping';
@@ -53,7 +54,7 @@ $preset_options = class_exists( 'AGA_Presets' ) ? AGA_Presets::get_preset_option
 // Helper to render pro badge
 function aga_pro_label( $checkout_url, $is_paying ) {
 	if ( ! $is_paying ) {
-		return sprintf( ' <a href="%s" target="_blank"><span class="aga-pro-badge">Pro</span></a>', esc_url( $checkout_url ) );
+		return sprintf( ' <a href="%s"><span class="aga-pro-badge">Pro</span></a>', esc_url( $checkout_url ) );
 	}
 	return '';
 }

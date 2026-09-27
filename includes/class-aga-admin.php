@@ -704,8 +704,6 @@ class AGA_Admin {
             return;
         }
 
-        $checkout_url = aga_checkout_url();
-
         $features = array(
             'Smart Mapping',
             'WooCommerce Integration',
@@ -738,9 +736,7 @@ class AGA_Admin {
                 <?php endforeach; ?>
             </div>
 
-            <a href="<?php echo esc_url( $checkout_url ); ?>" class="aga-upgrade-banner-cta" style="display:inline-block;background:#fff;color:#4361ee;font-weight:600;font-size:14px;padding:10px 28px;border-radius:6px;text-decoration:none;transition:opacity 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-                <?php esc_html_e( 'Upgrade to Pro', 'autocomplete-google-address' ); ?>
-            </a>
+            <?php aga_render_upgrade_options( 'banner' ); ?>
         </div>
 
         <script>

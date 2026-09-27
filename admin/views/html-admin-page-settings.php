@@ -11,7 +11,6 @@ defined( 'ABSPATH' ) || exit;
 $options       = get_option( 'Nish_aga_settings' );
 $is_paying     = aga_is_pro();
 $woo_active    = class_exists( 'WooCommerce' );
-$checkout_url  = aga_checkout_url();
 
 // Masked API key display.
 $current_api_key = $options['api_key'] ?? '';
@@ -134,9 +133,7 @@ if ( ! empty( $current_api_key ) ) {
 									<span class="dashicons dashicons-lock aga-icon-inline"></span>
 									<h3><?php esc_html_e( 'Pro Feature', 'autocomplete-google-address' ); ?></h3>
 									<p><?php esc_html_e( 'WooCommerce auto-integration is available in the Pro plan. Upgrade to automatically add address autocomplete to your checkout.', 'autocomplete-google-address' ); ?></p>
-									<a href="<?php echo esc_url( $checkout_url ); ?>" class="button button-primary" target="_blank">
-										<?php esc_html_e( 'Upgrade to Pro', 'autocomplete-google-address' ); ?>
-									</a>
+									<?php aga_render_upgrade_options( 'inline' ); ?>
 								</div>
 							</div>
 
@@ -238,9 +235,7 @@ if ( ! empty( $current_api_key ) ) {
 									<span class="dashicons dashicons-lock aga-icon-inline"></span>
 									<h3><?php esc_html_e( 'Pro Feature', 'autocomplete-google-address' ); ?></h3>
 									<p><?php esc_html_e( 'Custom dropdown styling is available in the Pro plan. Upgrade to customize colors, borders, font size, and more.', 'autocomplete-google-address' ); ?></p>
-									<a href="<?php echo esc_url( $checkout_url ); ?>" class="button button-primary" target="_blank">
-										<?php esc_html_e( 'Upgrade to Pro', 'autocomplete-google-address' ); ?>
-									</a>
+									<?php aga_render_upgrade_options( 'inline' ); ?>
 								</div>
 							</div>
 

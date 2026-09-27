@@ -782,3 +782,99 @@ function aga_checkout_url() {
 	}
 	return AGA_License::buy_url();
 }
+
+/**
+ * Freemius checkout (USD) — empty when Freemius isn't loaded (e.g. a site using our key).
+ *
+ * @return string
+ */
+function aga_freemius_checkout_url() {
+	if ( function_exists( 'google_autocomplete' ) ) {
+		$fs = google_autocomplete();
+		if ( is_object( $fs ) && method_exists( $fs, 'checkout_url' ) ) {
+			return (string) $fs->checkout_url();
+		}
+	}
+	return '';
+}
+
+/**
+ * The plugin's License page — where both ways to buy are shown side by side.
+ *
+ * @return string
+ */
+function aga_license_page_url() {
+	return admin_url( 'edit.php?post_type=aga_form&page=aga-license' );
+}
+
+/**
+ * The two ways to buy Pro, shown with equal weight so the customer chooses:
+ * local payment in BDT on mdnishath.com (bKash, Nagad, cards via EPS) or USD through Freemius.
+ * Sites that already hold one of our keys get a single "Renew license" button instead.
+ *
+ * @param string $variant   'banner' (white buttons on the purple banner), 'hero' (large) or 'inline'.
+ * @param bool   $show_note Show the "paste your key on the License page" hint.
+ */
+function aga_render_upgrade_options( $variant = 'inline', $show_note = true ) {
+	$on_dark  = 'banner' === $variant;
+	$btn_base = 'display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:210px;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600;line-height:1.3;box-sizing:border-box;';
+	$btn      = $on_dark
+		? $btn_base . 'background:#fff;color:#4361ee;box-shadow:0 2px 8px rgba(0,0,0,0.15);'
+		: $btn_base . 'background:#4361ee;color:#fff;border:1px solid #4361ee;';
+	$sub      = $on_dark ? 'font-size:12px;font-weight:400;color:#5b6477;' : 'font-size:12px;font-weight:400;color:rgba(255,255,255,0.85);';
+	$size     = 'hero' === $variant ? 'font-size:16px;padding:14px 22px;' : 'font-size:14px;';
+	$note     = $on_dark ? 'margin:12px 0 0;font-size:12.5px;color:rgba(255,255,255,0.85);' : 'margin:10px 0 0;font-size:12.5px;color:#646970;';
+	$link     = $on_dark ? 'color:#fff;text-decoration:underline;' : '';
+
+	echo '<div class="aga-upgrade-options">';
+
+	if ( AGA_License::has_key() ) {
+		printf(
+			'<a href="%1$s" target="_blank" rel="noopener" style="%2$s">%3$s<span style="%4$s">%5$s</span></a>',
+			esc_url( AGA_License::renew_url() ),
+			esc_attr( $btn . $size ),
+			esc_html__( 'Renew your license', 'autocomplete-google-address' ),
+			esc_attr( $sub ),
+			esc_html__( 'bKash · Nagad · Card — same key, time added', 'autocomplete-google-address' )
+		);
+		echo '</div>';
+		return;
+	}
+
+	echo '<div style="display:flex;flex-wrap:wrap;gap:10px;">';
+	printf(
+		'<a href="%1$s" target="_blank" rel="noopener" style="%2$s">%3$s<span style="%4$s">%5$s</span></a>',
+		esc_url( AGA_License::buy_url() ),
+		esc_attr( $btn . $size ),
+		esc_html__( 'Pay with bKash · Nagad · Card', 'autocomplete-google-address' ),
+		esc_attr( $sub ),
+		esc_html__( 'In BDT on mdnishath.com · instant key', 'autocomplete-google-address' )
+	);
+	$freemius = aga_freemius_checkout_url();
+	if ( '' !== $freemius ) {
+		printf(
+			'<a href="%1$s" style="%2$s">%3$s<span style="%4$s">%5$s</span></a>',
+			esc_url( $freemius ),
+			esc_attr( $btn . $size ),
+			esc_html__( 'Pay with Card · PayPal', 'autocomplete-google-address' ),
+			esc_attr( $sub ),
+			esc_html__( 'In USD via Freemius · activates automatically', 'autocomplete-google-address' )
+		);
+	}
+	echo '</div>';
+
+	if ( ! $show_note ) {
+		echo '</div>';
+		return;
+	}
+	printf(
+		'<p style="%1$s">%2$s <a href="%3$s" style="%4$s">%5$s</a></p>',
+		esc_attr( $note ),
+		esc_html__( 'Paid with bKash, Nagad or a local card? Paste your key on the', 'autocomplete-google-address' ),
+		esc_url( aga_license_page_url() ),
+		esc_attr( $link ),
+		esc_html__( 'License page', 'autocomplete-google-address' )
+	);
+	echo '</div>';
+}
+

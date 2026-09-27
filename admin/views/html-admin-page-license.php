@@ -136,6 +136,20 @@ $aga_state = isset( $aga_state_labels[ $aga_status['state'] ] ) ? $aga_state_lab
 		</div>
 	</div>
 
+	<?php if ( 'active' !== $aga_status['state'] && ! $aga_freemius_paying ) : ?>
+		<div class="aga-card">
+			<div class="aga-card-header">
+				<h2><?php esc_html_e( 'Get Pro — choose how to pay', 'autocomplete-google-address' ); ?></h2>
+			</div>
+			<div class="aga-card-body">
+				<?php aga_render_upgrade_options( 'inline', false ); ?>
+				<p class="description" style="margin-top:12px;">
+					<?php esc_html_e( 'bKash / Nagad / local card: you get a license key by email — paste it below. Freemius: Pro switches on automatically after checkout.', 'autocomplete-google-address' ); ?>
+				</p>
+			</div>
+		</div>
+	<?php endif; ?>
+
 	<?php if ( 'active' !== $aga_status['state'] ) : ?>
 		<div class="aga-card">
 			<div class="aga-card-header">
@@ -155,11 +169,6 @@ $aga_state = isset( $aga_state_labels[ $aga_status['state'] ] ) ? $aga_state_lab
 					</div>
 				</form>
 
-				<p>
-					<a href="<?php echo esc_url( AGA_License::buy_url() ); ?>" class="button button-secondary" target="_blank" rel="noopener noreferrer">
-						<?php esc_html_e( 'Buy a license (pay in BDT with bKash, Nagad, cards)', 'autocomplete-google-address' ); ?>
-					</a>
-				</p>
 				<p class="description">
 					<?php esc_html_e( 'Bought Pro through Freemius? You don\'t need a key: your Freemius account keeps working as before.', 'autocomplete-google-address' ); ?>
 				</p>

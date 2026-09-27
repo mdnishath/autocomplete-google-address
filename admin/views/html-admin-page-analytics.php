@@ -16,7 +16,6 @@ $is_paying = aga_is_pro();
     <h1><?php esc_html_e( 'Usage Analytics', 'autocomplete-google-address' ); ?></h1>
 
     <?php if ( ! $is_paying ) : ?>
-        <?php $checkout_url = aga_checkout_url(); ?>
         <div class="aga-analytics-upgrade">
             <div class="aga-analytics-upgrade-icon">&#128202;</div>
             <h2>
@@ -25,9 +24,7 @@ $is_paying = aga_is_pro();
             <p>
                 <?php esc_html_e( 'Track autocomplete searches, selections, and conversion rates. See which countries and cities your users are selecting the most.', 'autocomplete-google-address' ); ?>
             </p>
-            <a href="<?php echo esc_url( $checkout_url ); ?>" class="button button-primary button-hero">
-                <?php esc_html_e( 'Upgrade to Pro', 'autocomplete-google-address' ); ?>
-            </a>
+            <div style="display:flex;justify-content:center;"><?php aga_render_upgrade_options( 'hero' ); ?></div>
         </div>
     <?php else : ?>
 
