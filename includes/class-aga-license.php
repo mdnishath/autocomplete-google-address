@@ -768,6 +768,21 @@ function aga_is_pro() {
 }
 
 /**
+ * True when Pro comes from Freemius (paying or trial) and not from one of our keys.
+ * Such sites don't need anything from our licensing: no License menu, no key prompts.
+ *
+ * @return bool
+ */
+function aga_pro_via_freemius() {
+	if ( AGA_License::is_valid() || ! function_exists( 'google_autocomplete' ) ) {
+		return false;
+	}
+	$fs = google_autocomplete();
+	return is_object( $fs ) && method_exists( $fs, 'is_paying' )
+		&& ( (bool) $fs->is_paying() || ( method_exists( $fs, 'is_trial' ) && (bool) $fs->is_trial() ) );
+}
+
+/**
  * Upgrade / buy link: our buy page when our license is in use or Freemius is
  * not loaded, otherwise the Freemius checkout.
  *

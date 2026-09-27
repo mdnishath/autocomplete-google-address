@@ -164,15 +164,18 @@ class AGA_Admin {
                 array( $this, 'render_analytics_page' )
             );
 
-            // Add 'License' submenu (keys bought on mdnishath.com).
-            add_submenu_page(
-                'edit.php?post_type=aga_form',
-                __( 'License', 'autocomplete-google-address' ),
-                __( 'License', 'autocomplete-google-address' ),
-                'manage_options',
-                'aga-license',
-                array( $this, 'render_license_page' )
-            );
+            // Add 'License' submenu (keys bought on mdnishath.com). Not shown when Pro already
+            // comes from Freemius — those sites have nothing to do with our keys.
+            if ( ! aga_pro_via_freemius() ) {
+                add_submenu_page(
+                    'edit.php?post_type=aga_form',
+                    __( 'License', 'autocomplete-google-address' ),
+                    __( 'License', 'autocomplete-google-address' ),
+                    'manage_options',
+                    'aga-license',
+                    array( $this, 'render_license_page' )
+                );
+            }
 
             // Add 'Help' submenu.
             add_submenu_page(

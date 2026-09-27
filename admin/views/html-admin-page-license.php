@@ -14,7 +14,7 @@ if ( $aga_notice ) {
 	delete_transient( 'aga_license_notice_' . get_current_user_id() );
 }
 
-$aga_freemius_paying = ! AGA_License::is_valid() && aga_is_pro();
+$aga_freemius_paying = aga_pro_via_freemius();
 $aga_date_format     = get_option( 'date_format' );
 
 // Mask the key: show the prefix and the last group only.
