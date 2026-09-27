@@ -396,8 +396,16 @@ class AGA_License {
 
 		$status  = (int) wp_remote_retrieve_response_code( $response );
 		$decoded = json_decode( wp_remote_retrieve_body( $response ), true );
-		if ( ! is_array( $decoded ) ) {
-			$decoded = array();
+
+		// Every license-API reply carries a boolean "ok". Anything else (an HTML 404 from a
+		// site that isn't deployed, an HTML 403 from a proxy/CDN or security plugin) is not
+		// an answer about the key, so treat it like a network failure — never lock on it.
+		if ( ! is_array( $decoded ) || ! isset( $decoded['ok'] ) || ! is_bool( $decoded['ok'] ) ) {
+			return array(
+				'network_error' => true,
+				'status'        => $status,
+				'body'          => array(),
+			);
 		}
 
 		return array(
