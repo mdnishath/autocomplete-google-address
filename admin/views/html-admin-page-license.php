@@ -144,7 +144,7 @@ $aga_state = isset( $aga_state_labels[ $aga_status['state'] ] ) ? $aga_state_lab
 			<div class="aga-card-body">
 				<?php aga_render_upgrade_options( 'inline', false ); ?>
 				<p class="description" style="margin-top:12px;">
-					<?php esc_html_e( 'bKash / Nagad / local card: you get a license key by email — paste it below. Freemius: Pro switches on automatically after checkout.', 'autocomplete-google-address' ); ?>
+					<?php esc_html_e( 'bKash / Nagad / local card: you get a license key by email — paste it below. Card / PayPal (Freemius): Pro switches on automatically after checkout.', 'autocomplete-google-address' ); ?>
 				</p>
 			</div>
 		</div>
@@ -170,7 +170,13 @@ $aga_state = isset( $aga_state_labels[ $aga_status['state'] ] ) ? $aga_state_lab
 				</form>
 
 				<p class="description">
-					<?php esc_html_e( 'Bought Pro through Freemius? You don\'t need a key: your Freemius account keeps working as before.', 'autocomplete-google-address' ); ?>
+					<?php
+					printf(
+						/* translators: %s: link to the Plugins screen */
+						esc_html__( 'Have a Freemius license key instead? Activate it from %s → Autocomplete Google Address → Activate License.', 'autocomplete-google-address' ),
+						'<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">' . esc_html__( 'Plugins', 'autocomplete-google-address' ) . '</a>'
+					);
+					?>
 				</p>
 			</div>
 		</div>

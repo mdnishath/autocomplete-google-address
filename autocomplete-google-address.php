@@ -70,6 +70,38 @@ if ( !AGA_License::is_valid() && !function_exists( 'google_autocomplete' ) ) {
     // Signal that SDK was initiated.
     do_action( 'google_autocomplete_loaded' );
 }
+
+/**
+ * Don't let Freemius's connect / license-key screen take over the plugin. A site that isn't
+ * connected to Freemius lands in the plugin itself (free features work), where upgrade prompts
+ * offer both ways to buy side by side. Freemius stays available: its checkout, and "Opt In" /
+ * "Activate License" on the Plugins screen. Runs once — Freemius remembers the choice.
+ */
+function aga_skip_freemius_takeover() {
+	if ( ! is_admin() || ! function_exists( 'google_autocomplete' ) || AGA_License::is_valid() ) {
+		return;
+	}
+	$fs = google_autocomplete();
+	if ( ! is_object( $fs ) || ! $fs->is_activation_mode() || $fs->is_registered() || $fs->is_pending_activation() ) {
+		return;
+	}
+
+	// The premium build sets a "require license activation" flag on plugin activation, which
+	// forces the license-key screen. Clear it for THIS product only (Freemius's own
+	// "Activate Free Version" link does the same via a site-wide request parameter).
+	$clear = function () {
+		if ( isset( $this->_storage ) && true === $this->_storage->require_license_activation ) {
+			$this->_storage->require_license_activation = false;
+		}
+	};
+	\Closure::bind( $clear, $fs, get_class( $fs ) )();
+
+	// Same as pressing "Skip" on the opt-in screen: anonymous mode, no forced connect page.
+	if ( $fs->is_enable_anonymous() && ! $fs->is_anonymous() ) {
+		$fs->skip_connection();
+	}
+}
+add_action( 'init', 'aga_skip_freemius_takeover', 1 );
 /**
  * Currently plugin version.
  */

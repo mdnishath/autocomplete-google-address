@@ -472,7 +472,7 @@ class AGA_License {
 	public static function activate( $raw_key ) {
 		$key = self::normalise_key( $raw_key );
 		if ( 0 !== strpos( $key, self::KEY_PREFIX ) || ! preg_match( '/^[A-Z0-9-]{8,64}$/', $key ) ) {
-			return new WP_Error( 'bad_key', __( 'That does not look like an Autocomplete Google Address license key (AGA-XXXXX-XXXXX-XXXXX-XXXXX).', 'autocomplete-google-address' ) );
+			return new WP_Error( 'bad_key', __( 'That is not a mdnishath.com key (they look like AGA-XXXXX-XXXXX-XXXXX-XXXXX). A Freemius license key goes in Plugins → Autocomplete Google Address → Activate License.', 'autocomplete-google-address' ) );
 		}
 
 		$body               = self::base_body( $key );
