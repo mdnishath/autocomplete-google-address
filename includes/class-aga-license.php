@@ -112,7 +112,8 @@ class AGA_License {
 	 * @return string
 	 */
 	public static function renew_url() {
-		return self::DEFAULT_BASE_URL . '/renew';
+		$key = self::get_data()['key'];
+		return self::DEFAULT_BASE_URL . '/renew' . ( '' !== $key ? '?key=' . rawurlencode( $key ) : '' );
 	}
 
 	/* --------------------------------------------------------------------
@@ -668,7 +669,53 @@ class AGA_License {
 	public static function init( $plugin_file ) {
 		add_action( self::CRON_HOOK, array( __CLASS__, 'cron_refresh' ) );
 		add_action( 'init', array( __CLASS__, 'schedule_cron' ) );
+		add_action( 'admin_notices', array( __CLASS__, 'admin_notice' ) );
 		register_deactivation_hook( $plugin_file, array( __CLASS__, 'unschedule_cron' ) );
+	}
+
+	/**
+	 * Tell the site admin when a stored key stops unlocking Pro (expired / revoked /
+	 * unverifiable), or is about to expire. Not shown on the License page itself.
+	 */
+	public static function admin_notice() {
+		if ( ! current_user_can( 'manage_options' ) || ! self::has_key() ) {
+			return;
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only screen check.
+		if ( isset( $_GET['page'] ) && 'aga-license' === $_GET['page'] ) {
+			return;
+		}
+
+		$status      = self::get_status();
+		$license_url = admin_url( 'edit.php?post_type=aga_form&page=aga-license' );
+		$renew_url   = self::renew_url();
+		$class       = '';
+		$text        = '';
+
+		if ( 'expired' === $status['state'] ) {
+			$class = 'notice-error';
+			$text  = __( 'Your Autocomplete Google Address Pro license has expired, so Pro features are switched off.', 'autocomplete-google-address' );
+		} elseif ( 'invalid' === $status['state'] ) {
+			$class = 'notice-warning';
+			$text  = '' !== $status['message'] ? $status['message'] : __( 'Your Autocomplete Google Address Pro license could not be verified.', 'autocomplete-google-address' );
+		} elseif ( 'active' === $status['state'] && ! $status['lifetime'] && $status['expires'] && $status['expires'] - time() < 7 * DAY_IN_SECONDS ) {
+			$class = 'notice-warning';
+			/* translators: %s: expiry date */
+			$text = sprintf( __( 'Your Autocomplete Google Address Pro license expires on %s. Renew to keep Pro features running.', 'autocomplete-google-address' ), date_i18n( get_option( 'date_format' ), $status['expires'] ) );
+		}
+
+		if ( '' === $text ) {
+			return;
+		}
+		printf(
+			'<div class="notice %1$s"><p>%2$s <a href="%3$s" target="_blank" rel="noopener">%4$s</a> · <a href="%5$s">%6$s</a></p></div>',
+			esc_attr( $class ),
+			esc_html( $text ),
+			esc_url( $renew_url ),
+			esc_html__( 'Renew license', 'autocomplete-google-address' ),
+			esc_url( $license_url ),
+			esc_html__( 'License page', 'autocomplete-google-address' )
+		);
 	}
 
 	/**
@@ -702,7 +749,8 @@ class AGA_License {
 
 /**
  * Whether premium features are unlocked: a valid mdnishath.com license OR a
- * paying Freemius account (same semantics as the previous is_paying() checks).
+ * paying Freemius account OR a Freemius trial (the trial requires a card, so it
+ * should unlock Pro for its duration).
  *
  * @return bool
  */
@@ -713,7 +761,7 @@ function aga_is_pro() {
 	if ( function_exists( 'google_autocomplete' ) ) {
 		$fs = google_autocomplete();
 		if ( is_object( $fs ) && method_exists( $fs, 'is_paying' ) ) {
-			return (bool) $fs->is_paying();
+			return (bool) $fs->is_paying() || ( method_exists( $fs, 'is_trial' ) && (bool) $fs->is_trial() );
 		}
 	}
 	return false;

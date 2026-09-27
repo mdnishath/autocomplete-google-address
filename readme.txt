@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google address autocomplete, woocommerce address, address validation, map picker, checkout autocomplete
 Requires at least: 5.4
 Tested up to: 7.0.1
-Stable tag: 5.5.0
+Stable tag: 5.6.0
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -290,6 +290,13 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 
 == Changelog ==
 
+= 5.6.0 =
+* NEW: Pay in your own currency. Pro licenses can now also be bought on mdnishath.com with bKash, Nagad, Rocket, local bank cards or any Visa / Mastercard / Amex card, charged in BDT. Enter the key under Google Address -> License. Existing Freemius purchases keep working exactly as before.
+* NEW: License page showing the key's status, expiry and how many sites use it, with activate / deactivate.
+* NEW: Admin notice when a license expires, can't be verified, or is about to expire, with a renew link.
+* FIX: The Freemius trial now unlocks Pro features for the length of the trial.
+* IMPROVED: License checks are cached and re-validated once a day in the background; a temporary network problem never switches Pro off.
+
 = 5.5.0 =
 * FIX: State and Country now fill correctly on the WooCommerce block checkout. The block checkout renders a React-controlled `<select>`, and the plugin was announcing its change with a jQuery-only event that React never sees -- the value was written to the DOM and then silently discarded on the next re-render. The plugin now dispatches real DOM events, which React, jQuery, select2 and selectWoo all receive.
 * FIX: State and postcode no longer lost to a checkout re-render. WooCommerce rebuilds the state field whenever the country changes, and the previous single fixed 500ms delay was a race that slower sites and longer state lists lost. Values are now re-applied on a short schedule and again on WooCommerce's `country_to_state_changed` and `updated_checkout` events, while never overwriting a value the customer typed themselves.
@@ -377,6 +384,9 @@ Yes, we offer a 3-day free trial of the Pro plan so you can test all features be
 * Initial release.
 
 == Upgrade Notice ==
+
+= 5.6.0 =
+Adds local-currency licenses (bKash, Nagad, cards in BDT) alongside Freemius, a License page, and makes the Freemius trial unlock Pro.
 
 = 5.5.0 =
 Fixes State and Country not filling on the WooCommerce checkout, including the block checkout. Recommended for all WooCommerce stores.
