@@ -4,7 +4,7 @@
  * Plugin Name: Autocomplete Google Address (Premium)
  * Plugin URI:        https://wordpress.org/plugins/autocomplete-google-address/
  * Description:       Add Google Places address autocomplete to any existing form in WordPress using a selector-based mapping builder.
- * Version:           5.6.1
+ * Version:           5.6.2
  * Author:            Md Nishath Khandakar
  * Author URI:        https://profiles.wordpress.org/nishatbd31/
  * License:           GPL-2.0-or-later
@@ -42,7 +42,7 @@ if ( !AGA_License::is_valid() && !function_exists( 'google_autocomplete' ) ) {
         if ( !isset( $google_autocomplete ) ) {
             // Include Freemius SDK.
             require_once dirname( __FILE__ ) . '/vendor/freemius/start.php';
-            $google_autocomplete = fs_dynamic_init( array(
+            $aga_fs_config = array(
                 'id'               => '6886',
                 'slug'             => 'form-autocomplete-nish',
                 'type'             => 'plugin',
@@ -63,7 +63,25 @@ if ( !AGA_License::is_valid() && !function_exists( 'google_autocomplete' ) ) {
                 ),
                 'is_live'          => true,
                 'is_org_compliant' => true,
-            ) );
+            );
+            // While Freemius sales are off (AGA_License::FREEMIUS_SALES), Freemius only keeps
+            // existing customers licensed: no trial offer, no upgrade / pricing menu.
+            if ( !aga_freemius_sales_enabled() ) {
+                unset($aga_fs_config['trial']);
+                $aga_fs_config['menu']['pricing'] = false;
+            }
+            $google_autocomplete = fs_dynamic_init( $aga_fs_config );
+            if ( !aga_freemius_sales_enabled() ) {
+                $google_autocomplete->add_filter(
+                    'is_submenu_visible',
+                    function ( $is_visible, $submenu_id ) {
+                        return ( in_array( $submenu_id, array('pricing', 'upgrade'), true ) ? false : $is_visible );
+                    },
+                    10,
+                    2
+                );
+                $google_autocomplete->add_filter( 'show_trial', '__return_false' );
+            }
         }
         return $google_autocomplete;
     }
@@ -108,7 +126,7 @@ add_action( 'init', 'aga_skip_freemius_takeover', 1 );
 /**
  * Currently plugin version.
  */
-define( 'AGA_VERSION', '5.6.1' );
+define( 'AGA_VERSION', '5.6.2' );
 /**
  * Plugin directory path.
  */

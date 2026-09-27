@@ -38,6 +38,14 @@ class AGA_License {
 	/** Option holding key, token and last known state (autoload off). */
 	const OPTION = 'aga_license';
 
+	/**
+	 * Sell Pro through the Freemius checkout as well as mdnishath.com?
+	 * Off: every buy / upgrade link goes to mdnishath.com (cards worldwide, bKash, Nagad) and
+	 * Freemius's upgrade menu and trial offers are hidden. Customers who already pay through
+	 * Freemius keep Pro either way. Set to true (and release) to sell through Freemius again.
+	 */
+	const FREEMIUS_SALES = false;
+
 	/** WP-Cron hook for the background refresh (hook name kept from the daily schedule). */
 	const CRON_HOOK = 'aga_license_daily_refresh';
 
@@ -812,7 +820,7 @@ function aga_pro_via_freemius() {
  * @return string
  */
 function aga_checkout_url() {
-	if ( ! AGA_License::has_key() && function_exists( 'google_autocomplete' ) ) {
+	if ( aga_freemius_sales_enabled() && ! AGA_License::has_key() && function_exists( 'google_autocomplete' ) ) {
 		$fs = google_autocomplete();
 		if ( is_object( $fs ) && method_exists( $fs, 'checkout_url' ) ) {
 			return $fs->checkout_url();
@@ -827,13 +835,22 @@ function aga_checkout_url() {
  * @return string
  */
 function aga_freemius_checkout_url() {
-	if ( function_exists( 'google_autocomplete' ) ) {
+	if ( aga_freemius_sales_enabled() && function_exists( 'google_autocomplete' ) ) {
 		$fs = google_autocomplete();
 		if ( is_object( $fs ) && method_exists( $fs, 'checkout_url' ) ) {
 			return (string) $fs->checkout_url();
 		}
 	}
 	return '';
+}
+
+/**
+ * Whether Pro is also sold through Freemius (see AGA_License::FREEMIUS_SALES).
+ *
+ * @return bool
+ */
+function aga_freemius_sales_enabled() {
+	return (bool) apply_filters( 'aga_freemius_sales', AGA_License::FREEMIUS_SALES );
 }
 
 /**
@@ -846,9 +863,9 @@ function aga_license_page_url() {
 }
 
 /**
- * The two ways to buy Pro, shown with equal weight so the customer chooses:
- * local payment in BDT on mdnishath.com (bKash, Nagad, cards via EPS) or USD through Freemius.
- * Sites that already hold one of our keys get a single "Renew license" button instead.
+ * How to buy Pro: mdnishath.com (any card worldwide, bKash, Nagad), plus the Freemius
+ * checkout while Freemius sales are on. Sites that already hold one of our keys get a
+ * single "Renew license" button instead.
  *
  * @param string $variant   'banner' (white buttons on the purple banner), 'hero' (large) or 'inline'.
  * @param bool   $show_note Show the "paste your key on the License page" hint.
@@ -873,7 +890,7 @@ function aga_render_upgrade_options( $variant = 'inline', $show_note = true ) {
 			esc_attr( $btn . $size ),
 			esc_html__( 'Renew your license', 'autocomplete-google-address' ),
 			esc_attr( $sub ),
-			esc_html__( 'bKash · Nagad · Card — same key, time added', 'autocomplete-google-address' )
+			esc_html__( 'Any card, bKash or Nagad · same key, time added', 'autocomplete-google-address' )
 		);
 		echo '</div>';
 		return;
@@ -884,9 +901,9 @@ function aga_render_upgrade_options( $variant = 'inline', $show_note = true ) {
 		'<a href="%1$s" target="_blank" rel="noopener" style="%2$s">%3$s<span style="%4$s">%5$s</span></a>',
 		esc_url( AGA_License::buy_url() ),
 		esc_attr( $btn . $size ),
-		esc_html__( 'Pay with bKash · Nagad · Card', 'autocomplete-google-address' ),
+		esc_html__( 'Get Pro · Visa · Mastercard · Amex', 'autocomplete-google-address' ),
 		esc_attr( $sub ),
-		esc_html__( 'In BDT on mdnishath.com · instant key', 'autocomplete-google-address' )
+		esc_html__( 'Any card, worldwide · also bKash / Nagad · instant key', 'autocomplete-google-address' )
 	);
 	$freemius = aga_freemius_checkout_url();
 	if ( '' !== $freemius ) {
@@ -908,7 +925,7 @@ function aga_render_upgrade_options( $variant = 'inline', $show_note = true ) {
 	printf(
 		'<p style="%1$s">%2$s <a href="%3$s" style="%4$s">%5$s</a></p>',
 		esc_attr( $note ),
-		esc_html__( 'Paid with bKash, Nagad or a local card? Paste your key on the', 'autocomplete-google-address' ),
+		esc_html__( 'Bought on mdnishath.com? Paste your key on the', 'autocomplete-google-address' ),
 		esc_url( aga_license_page_url() ),
 		esc_attr( $link ),
 		esc_html__( 'License page', 'autocomplete-google-address' )

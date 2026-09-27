@@ -3,7 +3,7 @@ Contributors: nishatbd31, freemius
 Tags: google address autocomplete, woocommerce address, address validation, map picker, checkout autocomplete
 Requires at least: 5.4
 Tested up to: 7.1
-Stable tag: 5.6.1
+Stable tag: 5.6.2
 Requires PHP: 7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -271,9 +271,13 @@ Yes (Pro). You can restrict autocomplete results to up to 5 countries. The Map P
 
 Pro features unlock instantly -- no reinstall, no separate download. Just enter your license key and all Pro features become available immediately.
 
+= How do I buy Pro? =
+
+Buy a license at https://mdnishath.com/buy/autocomplete-google-address -- pay with any Visa, Mastercard or Amex card from anywhere in the world (bKash and Nagad work too). Your license key is emailed instantly; paste it under Google Address -> License.
+
 = Is there a free trial? =
 
-Yes, we offer a 3-day free trial of the Pro plan so you can test all features before purchasing.
+The free version is fully usable with no time limit, so you can try the plugin on your site before upgrading to Pro.
 
 == Screenshots ==
 
@@ -305,6 +309,9 @@ Used only if you enter a license key bought on mdnishath.com (Google Address -> 
 Terms: https://mdnishath.com/terms - Privacy: https://mdnishath.com/privacy
 
 == Changelog ==
+
+= 5.6.2 =
+* CHANGED: Pro is sold on mdnishath.com, where any Visa, Mastercard or Amex card from any country is accepted (plus bKash and Nagad), with the license key emailed instantly. Upgrade links go there; the Freemius checkout and trial offer are paused. Customers who bought through Freemius keep Pro exactly as before.
 
 = 5.6.1 =
 * IMPROVED: A license revoked, expired or moved on mdnishath.com now switches Pro off within 15 minutes of admin use (hourly in the background), and the License page always checks and shows the current status. A temporary network problem still never switches Pro off.
@@ -404,6 +411,9 @@ Terms: https://mdnishath.com/terms - Privacy: https://mdnishath.com/privacy
 * Initial release.
 
 == Upgrade Notice ==
+
+= 5.6.2 =
+Pro licenses are now bought on mdnishath.com with any card worldwide. Existing Freemius customers are not affected.
 
 = 5.6.1 =
 License status from mdnishath.com is checked more often, so renewals and changes show up within minutes.

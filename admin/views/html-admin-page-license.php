@@ -139,12 +139,18 @@ $aga_state = isset( $aga_state_labels[ $aga_status['state'] ] ) ? $aga_state_lab
 	<?php if ( 'active' !== $aga_status['state'] && ! $aga_freemius_paying ) : ?>
 		<div class="aga-card">
 			<div class="aga-card-header">
-				<h2><?php esc_html_e( 'Get Pro — choose how to pay', 'autocomplete-google-address' ); ?></h2>
+				<h2><?php echo esc_html( aga_freemius_sales_enabled() ? __( 'Get Pro — choose how to pay', 'autocomplete-google-address' ) : __( 'Get Pro', 'autocomplete-google-address' ) ); ?></h2>
 			</div>
 			<div class="aga-card-body">
 				<?php aga_render_upgrade_options( 'inline', false ); ?>
 				<p class="description" style="margin-top:12px;">
-					<?php esc_html_e( 'bKash / Nagad / local card: you get a license key by email — paste it below. Card / PayPal (Freemius): Pro switches on automatically after checkout.', 'autocomplete-google-address' ); ?>
+					<?php
+					if ( aga_freemius_sales_enabled() ) {
+						esc_html_e( 'Visa, Mastercard or Amex from any country, bKash or Nagad on mdnishath.com: you get a license key by email instantly — paste it below. Card / PayPal (Freemius): Pro switches on automatically after checkout.', 'autocomplete-google-address' );
+					} else {
+						esc_html_e( 'Pay with Visa, Mastercard or Amex from any country (or bKash / Nagad). Your license key arrives by email instantly — paste it below.', 'autocomplete-google-address' );
+					}
+					?>
 				</p>
 			</div>
 		</div>
