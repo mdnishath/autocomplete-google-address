@@ -10,8 +10,8 @@ defined( 'ABSPATH' ) || exit;
 
 global $post;
 
-$is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
-$checkout_url = function_exists( 'google_autocomplete' ) ? google_autocomplete()->checkout_url() : '#';
+$is_paying = aga_is_pro();
+$checkout_url = aga_checkout_url();
 
 // Get saved values
 $mode              = 'smart_mapping';

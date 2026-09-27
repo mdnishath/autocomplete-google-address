@@ -19,7 +19,7 @@ class AGA_WooCommerce {
 			return;
 		}
 
-		if ( ! function_exists( 'google_autocomplete' ) || ! google_autocomplete()->is_paying() ) {
+		if ( ! aga_is_pro() ) {
 			return;
 		}
 

@@ -1,7 +1,7 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-$is_paying  = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+$is_paying  = aga_is_pro();
 $woo_active = class_exists( 'WooCommerce' );
 $languages  = function_exists( 'aga_get_languages' ) ? aga_get_languages() : array();
 $countries  = function_exists( 'aga_get_countries' ) ? aga_get_countries() : array();

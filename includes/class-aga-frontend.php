@@ -237,7 +237,7 @@ class AGA_Frontend {
         wp_localize_script( $this->plugin_name, 'aga_form_configs', $configs );
 
         $settings = get_option( 'Nish_aga_settings' );
-        $is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+        $is_paying = aga_is_pro();
 
         $frontend_data = array(
             'ajax_url'     => admin_url( 'admin-ajax.php' ),
@@ -330,7 +330,7 @@ class AGA_Frontend {
      * @since 1.2.0
      */
     public function output_custom_styles() {
-        if ( ! function_exists( 'google_autocomplete' ) || ! google_autocomplete()->is_paying() ) {
+        if ( ! aga_is_pro() ) {
             return;
         }
 

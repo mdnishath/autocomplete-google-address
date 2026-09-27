@@ -63,7 +63,7 @@ class AGA_REST_API {
     }
 
     public function validate_address( $request ) {
-        if ( ! function_exists( 'google_autocomplete' ) || ! google_autocomplete()->is_paying() ) {
+        if ( ! aga_is_pro() ) {
             return new WP_REST_Response( array( 'error' => 'Pro feature' ), 403 );
         }
 

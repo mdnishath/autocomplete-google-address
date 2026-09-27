@@ -16,7 +16,23 @@
 if ( !defined( 'WPINC' ) ) {
     die;
 }
-if ( !function_exists( 'google_autocomplete' ) ) {
+/**
+ * License client for keys bought on mdnishath.com (EPS). Also defines
+ * aga_is_pro() and aga_checkout_url(), which every premium check uses.
+ */
+require_once dirname( __FILE__ ) . '/includes/class-aga-license.php';
+AGA_License::init( __FILE__ );
+// Re-validate our key online at most once a day (hourly after a failure) on admin
+// loads, before deciding below whether Freemius is needed. WP-Cron covers sites
+// whose admin is rarely opened.
+if ( is_admin() && !wp_doing_cron() ) {
+    AGA_License::maybe_refresh();
+}
+// Customers with a valid mdnishath.com license don't use Freemius at all: skip its
+// init so none of its UI (opt-in, account, pricing, upgrade prompts) is shown.
+// google_autocomplete() is then undefined; always go through aga_is_pro() /
+// aga_checkout_url() instead of calling it directly.
+if ( !AGA_License::is_valid() && !function_exists( 'google_autocomplete' ) ) {
     // Create a helper function for easy SDK access.
     function google_autocomplete() {
         global $google_autocomplete;

@@ -9,14 +9,14 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+$is_paying = aga_is_pro();
 ?>
 
 <div class="wrap">
     <h1><?php esc_html_e( 'Usage Analytics', 'autocomplete-google-address' ); ?></h1>
 
     <?php if ( ! $is_paying ) : ?>
-        <?php $checkout_url = function_exists( 'google_autocomplete' ) ? google_autocomplete()->checkout_url() : '#'; ?>
+        <?php $checkout_url = aga_checkout_url(); ?>
         <div class="aga-analytics-upgrade">
             <div class="aga-analytics-upgrade-icon">&#128202;</div>
             <h2>

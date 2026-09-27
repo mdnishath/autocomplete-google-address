@@ -38,7 +38,7 @@ class AGA_Autocomplete {
             'selectors'     => array(),
         );
 
-        $is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+        $is_paying = aga_is_pro();
 
         if ( $is_paying ) {
             $config['selectors']['street'] = get_post_meta( $form_id, 'Nish_aga_street_selector', true );

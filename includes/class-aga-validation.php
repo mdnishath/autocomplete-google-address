@@ -22,7 +22,7 @@ class AGA_Validation {
         check_ajax_referer( 'aga_frontend_nonce', 'nonce' );
 
         // Only allow if user is paying (Pro feature).
-        if ( ! function_exists( 'google_autocomplete' ) || ! google_autocomplete()->is_paying() ) {
+        if ( ! aga_is_pro() ) {
             wp_send_json_error( array( 'message' => __( 'This feature requires a Pro license.', 'autocomplete-google-address' ) ), 403 );
         }
 

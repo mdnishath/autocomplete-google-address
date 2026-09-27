@@ -40,7 +40,7 @@ class AGA_Elementor_Form_Field extends \ElementorPro\Modules\Forms\Fields\Field_
 			return;
 		}
 
-		$is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+		$is_paying = aga_is_pro();
 		$condition = array( 'field_type' => $this->get_type() );
 		$tab_args  = array(
 			'tab'          => 'content',
@@ -152,7 +152,7 @@ class AGA_Elementor_Form_Field extends \ElementorPro\Modules\Forms\Fields\Field_
 	public function render( $item, $item_index, $form ) {
 		$form_id   = $form->get_id();
 		$field_id  = $item['custom_id'];
-		$is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+		$is_paying = aga_is_pro();
 
 		// Smart Mapping is Pro-only — fall back to plain single-line for free users.
 		$mode = $is_paying ? 'smart_mapping' : 'single_line';

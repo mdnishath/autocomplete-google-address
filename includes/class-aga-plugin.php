@@ -187,6 +187,8 @@ class AGA_Plugin {
         $this->loader->add_action( 'admin_notices', $plugin_admin, 'render_upgrade_banner' );
         $this->loader->add_action( 'wp_ajax_aga_dismiss_upgrade', $plugin_admin, 'dismiss_upgrade_banner' );
         $this->loader->add_action( 'wp_ajax_aga_vst_search_pages', $plugin_admin, 'vst_search_pages' );
+        $this->loader->add_action( 'admin_post_aga_license_activate', $plugin_admin, 'handle_license_action' );
+        $this->loader->add_action( 'admin_post_aga_license_deactivate', $plugin_admin, 'handle_license_action' );
         $this->loader->add_action( 'admin_footer', $plugin_admin, 'render_import_export_ui' );
 
         // Import/Export functionality

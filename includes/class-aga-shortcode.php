@@ -126,7 +126,7 @@ class AGA_Shortcode {
      * @return string HTML output.
      */
     private function render_standalone( $instance_id, $atts ) {
-        $is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+        $is_paying = aga_is_pro();
         // Smart Mapping is Pro-only — fall back to plain single-line for free users.
         $mode      = $is_paying ? 'smart_mapping' : 'single_line';
         $show_map = 'true' === strtolower( $atts['show_map'] );

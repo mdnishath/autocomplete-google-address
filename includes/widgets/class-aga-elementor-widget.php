@@ -71,7 +71,7 @@ class AGA_Elementor_Widget extends \Elementor\Widget_Base {
      * Register content tab controls.
      */
     private function register_content_controls() {
-        $is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+        $is_paying = aga_is_pro();
 
         // --- Section: General ---
         $this->start_controls_section(
@@ -360,7 +360,7 @@ class AGA_Elementor_Widget extends \Elementor\Widget_Base {
      */
     protected function render() {
         $settings  = $this->get_settings_for_display();
-        $is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+        $is_paying = aga_is_pro();
         $widget_id = $this->get_id();
         $instance_id = 'aga-el-' . $widget_id;
 

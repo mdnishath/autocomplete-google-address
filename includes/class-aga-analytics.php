@@ -73,7 +73,7 @@ class AGA_Analytics {
         }
 
         // Only works for paying users.
-        if ( ! function_exists( 'google_autocomplete' ) || ! google_autocomplete()->is_paying() ) {
+        if ( ! aga_is_pro() ) {
             wp_send_json_error( 'Pro feature', 403 );
         }
 
@@ -112,7 +112,7 @@ class AGA_Analytics {
             wp_send_json_error( 'Unauthorized', 403 );
         }
 
-        if ( ! function_exists( 'google_autocomplete' ) || ! google_autocomplete()->is_paying() ) {
+        if ( ! aga_is_pro() ) {
             wp_send_json_error( 'Pro feature', 403 );
         }
 

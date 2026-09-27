@@ -294,7 +294,7 @@ public function add_custom_add_new_menu() {
     public function custom_column_content( $column, $post_id ) {
 
         if ( 'aga_mode' === $column ) {
-            $is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+            $is_paying = aga_is_pro();
             echo esc_html( $is_paying ? 'Smart Mapping' : 'Smart Mapping (Pro)' );
         }
 

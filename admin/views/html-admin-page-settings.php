@@ -9,9 +9,9 @@
 defined( 'ABSPATH' ) || exit;
 
 $options       = get_option( 'Nish_aga_settings' );
-$is_paying     = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+$is_paying     = aga_is_pro();
 $woo_active    = class_exists( 'WooCommerce' );
-$checkout_url  = function_exists( 'google_autocomplete' ) ? google_autocomplete()->checkout_url() : '#';
+$checkout_url  = aga_checkout_url();
 
 // Masked API key display.
 $current_api_key = $options['api_key'] ?? '';

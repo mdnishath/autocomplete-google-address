@@ -67,7 +67,7 @@ class AGA_Admin {
         }
 
         $is_plugin_page = ( 'aga_form' === $screen->post_type ) ||
-                          ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'aga-settings', 'aga-help', 'aga-wizard', 'aga-analytics' ), true ) );
+                          ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'aga-settings', 'aga-help', 'aga-wizard', 'aga-analytics', 'aga-license' ), true ) );
 
         if ( ! $is_plugin_page ) {
             return;
@@ -90,7 +90,7 @@ class AGA_Admin {
         }
 
         $is_plugin_page = ( 'aga_form' === $screen->post_type ) ||
-                          ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'aga-settings', 'aga-help', 'aga-wizard', 'aga-analytics' ), true ) );
+                          ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'aga-settings', 'aga-help', 'aga-wizard', 'aga-analytics', 'aga-license' ), true ) );
 
         if ( ! $is_plugin_page ) {
             return;
@@ -105,12 +105,12 @@ class AGA_Admin {
         wp_localize_script( $this->plugin_name, 'aga_admin_data', array(
             'ajax_url'  => admin_url( 'admin-ajax.php' ),
             'nonce'     => wp_create_nonce( 'aga_admin_nonce' ),
-            'is_paying' => function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying(),
+            'is_paying' => aga_is_pro(),
             'api_key'   => isset( $settings['api_key'] ) ? $settings['api_key'] : '',
         ) );
 
         // Visual Selector Tool (Pro only, form edit screen only).
-        $is_paying = function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying();
+        $is_paying = aga_is_pro();
         if ( $is_paying && 'aga_form' === $screen->post_type ) {
             wp_enqueue_script(
                 'aga-visual-selector',
@@ -164,6 +164,16 @@ class AGA_Admin {
                 array( $this, 'render_analytics_page' )
             );
 
+            // Add 'License' submenu (keys bought on mdnishath.com).
+            add_submenu_page(
+                'edit.php?post_type=aga_form',
+                __( 'License', 'autocomplete-google-address' ),
+                __( 'License', 'autocomplete-google-address' ),
+                'manage_options',
+                'aga-license',
+                array( $this, 'render_license_page' )
+            );
+
             // Add 'Help' submenu.
             add_submenu_page(
                 'edit.php?post_type=aga_form', // Parent is the CPT's main menu slug
@@ -190,6 +200,53 @@ class AGA_Admin {
      */
     public function render_help_page() {
         require_once AGA_PLUGIN_DIR . 'admin/views/html-admin-page-help.php';
+    }
+
+    /**
+     * Renders the License page view.
+     *
+     * @since 5.6.0
+     */
+    public function render_license_page() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'You do not have permission to access this page.', 'autocomplete-google-address' ) );
+        }
+        require_once AGA_PLUGIN_DIR . 'admin/views/html-admin-page-license.php';
+    }
+
+    /**
+     * Handles the Activate / Deactivate form posts from the License page
+     * (admin-post.php?action=aga_license_activate|aga_license_deactivate).
+     *
+     * @since 5.6.0
+     */
+    public function handle_license_action() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'You do not have permission to do this.', 'autocomplete-google-address' ), 403 );
+        }
+
+        $action = isset( $_POST['action'] ) ? sanitize_key( wp_unslash( $_POST['action'] ) ) : '';
+
+        if ( 'aga_license_activate' === $action ) {
+            check_admin_referer( 'aga_license_activate' );
+            $key    = isset( $_POST['aga_license_key'] ) ? sanitize_text_field( wp_unslash( $_POST['aga_license_key'] ) ) : '';
+            $result = AGA_License::activate( $key );
+            $notice = is_wp_error( $result )
+                ? array( 'type' => 'error', 'message' => $result->get_error_message() )
+                : array( 'type' => 'success', 'message' => __( 'License activated. Pro features are unlocked on this site.', 'autocomplete-google-address' ) );
+        } elseif ( 'aga_license_deactivate' === $action ) {
+            check_admin_referer( 'aga_license_deactivate' );
+            $result = AGA_License::deactivate();
+            $notice = is_wp_error( $result )
+                ? array( 'type' => 'error', 'message' => $result->get_error_message() )
+                : array( 'type' => 'success', 'message' => __( 'License deactivated on this site. The activation slot is free again.', 'autocomplete-google-address' ) );
+        } else {
+            wp_die( esc_html__( 'Unknown action.', 'autocomplete-google-address' ), 400 );
+        }
+
+        set_transient( 'aga_license_notice_' . get_current_user_id(), $notice, 5 * MINUTE_IN_SECONDS );
+        wp_safe_redirect( admin_url( 'edit.php?post_type=aga_form&page=aga-license' ) );
+        exit;
     }
 
     /**
@@ -235,7 +292,7 @@ class AGA_Admin {
         }
 
         $is_plugin_page = ( 'aga_form' === $screen->post_type ) ||
-                          ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'aga-settings', 'aga-help', 'aga-wizard', 'aga-analytics' ), true ) );
+                          ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'aga-settings', 'aga-help', 'aga-wizard', 'aga-analytics', 'aga-license' ), true ) );
 
         if ( ! $is_plugin_page ) {
             return;
@@ -312,7 +369,7 @@ class AGA_Admin {
         }
 
         $is_plugin_page = ( 'aga_form' === $screen->post_type ) ||
-                          ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'aga-settings', 'aga-help', 'aga-wizard', 'aga-analytics' ), true ) );
+                          ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'aga-settings', 'aga-help', 'aga-wizard', 'aga-analytics', 'aga-license' ), true ) );
 
         if ( ! $is_plugin_page ) {
             return;
@@ -546,7 +603,7 @@ class AGA_Admin {
         }
 
         $is_plugin_page = ( 'aga_form' === $screen->post_type ) ||
-                          ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'aga-settings', 'aga-help', 'aga-wizard', 'aga-analytics' ), true ) );
+                          ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'aga-settings', 'aga-help', 'aga-wizard', 'aga-analytics', 'aga-license' ), true ) );
 
         if ( ! $is_plugin_page ) {
             return;
@@ -608,7 +665,7 @@ class AGA_Admin {
      */
     public function render_upgrade_banner() {
         // Only show for FREE users.
-        if ( function_exists( 'google_autocomplete' ) && google_autocomplete()->is_paying() ) {
+        if ( aga_is_pro() ) {
             return;
         }
 
@@ -641,13 +698,13 @@ class AGA_Admin {
         }
 
         $is_plugin_page = ( 'aga_form' === $screen->post_type ) ||
-                          ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'aga-settings', 'aga-help', 'aga-wizard', 'aga-analytics' ), true ) );
+                          ( isset( $_GET['page'] ) && in_array( $_GET['page'], array( 'aga-settings', 'aga-help', 'aga-wizard', 'aga-analytics', 'aga-license' ), true ) );
 
         if ( ! $is_plugin_page ) {
             return;
         }
 
-        $checkout_url = function_exists( 'google_autocomplete' ) ? google_autocomplete()->checkout_url() : '#';
+        $checkout_url = aga_checkout_url();
 
         $features = array(
             'Smart Mapping',

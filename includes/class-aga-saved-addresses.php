@@ -38,7 +38,7 @@ class AGA_Saved_Addresses {
             wp_send_json_error( array( 'message' => 'Not logged in.' ) );
         }
 
-        if ( ! function_exists( 'google_autocomplete' ) || ! google_autocomplete()->is_paying() ) {
+        if ( ! aga_is_pro() ) {
             wp_send_json_error( array( 'message' => 'Pro feature.' ) );
         }
 
@@ -93,7 +93,7 @@ class AGA_Saved_Addresses {
             wp_send_json_error( array( 'message' => 'Not logged in.' ) );
         }
 
-        if ( ! function_exists( 'google_autocomplete' ) || ! google_autocomplete()->is_paying() ) {
+        if ( ! aga_is_pro() ) {
             wp_send_json_error( array( 'message' => 'Pro feature.' ) );
         }
 
