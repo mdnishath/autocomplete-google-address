@@ -22,7 +22,7 @@ if ( !defined( 'WPINC' ) ) {
  */
 require_once dirname( __FILE__ ) . '/includes/class-aga-license.php';
 AGA_License::init( __FILE__ );
-// Re-validate our key online at most once a day (hourly after a failure) on admin
+// Re-validate our key online every few hours (hourly after a failure) on admin
 // loads, before deciding below whether Freemius is needed. WP-Cron covers sites
 // whose admin is rarely opened.
 if ( is_admin() && !wp_doing_cron() ) {

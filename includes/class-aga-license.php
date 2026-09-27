@@ -38,11 +38,18 @@ class AGA_License {
 	/** Option holding key, token and last known state (autoload off). */
 	const OPTION = 'aga_license';
 
-	/** WP-Cron hook for the daily refresh. */
+	/** WP-Cron hook for the background refresh (hook name kept from the daily schedule). */
 	const CRON_HOOK = 'aga_license_daily_refresh';
 
-	/** Seconds between online validations after a successful check. */
-	const REFRESH_INTERVAL = 86400;
+	/** How often WP-Cron re-validates the key. */
+	const CRON_RECURRENCE = 'twicedaily';
+
+	/**
+	 * Seconds between online validations after a successful check. A license revoked,
+	 * expired or moved on mdnishath.com takes effect within this time (offline, the
+	 * signed token keeps working until its `chk`).
+	 */
+	const REFRESH_INTERVAL = 6 * HOUR_IN_SECONDS;
 
 	/** Seconds before retrying after a failed (network) check. */
 	const RETRY_INTERVAL = 3600;
@@ -66,7 +73,7 @@ class AGA_License {
 
 	/**
 	 * License server base URL. Overridable via AGA_LICENSE_SERVER_URL in
-	 * wp-config.php, but only while WP_DEBUG is true (local testing).
+	 * wp-config.php, but only on a local/development site with WP_DEBUG on.
 	 *
 	 * @return string
 	 */
@@ -79,7 +86,7 @@ class AGA_License {
 
 	/**
 	 * Raw base64 public key. Overridable via AGA_LICENSE_PUBLIC_KEY in
-	 * wp-config.php, but only while WP_DEBUG is true (local testing).
+	 * wp-config.php, but only on a local/development site with WP_DEBUG on.
 	 *
 	 * @return string
 	 */
@@ -91,10 +98,18 @@ class AGA_License {
 	}
 
 	/**
+	 * Test-server overrides are for the plugin's own development only. Many live sites
+	 * leave WP_DEBUG on, so the environment must also be declared local/development
+	 * (WP_ENVIRONMENT_TYPE); a production site always uses mdnishath.com and its key.
+	 *
 	 * @return bool
 	 */
 	private static function debug_overrides_allowed() {
-		return defined( 'WP_DEBUG' ) && WP_DEBUG;
+		if ( ! defined( 'WP_DEBUG' ) || ! WP_DEBUG ) {
+			return false;
+		}
+		$env = function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : 'production';
+		return in_array( $env, array( 'local', 'development' ), true );
 	}
 
 	/**
@@ -537,7 +552,7 @@ class AGA_License {
 	}
 
 	/**
-	 * Refresh the token online if due (at most daily, hourly after a failure).
+	 * Refresh the token online if due (every few hours, hourly after a failure).
 	 *
 	 * @param bool $force Ignore the throttle.
 	 */
@@ -726,13 +741,18 @@ class AGA_License {
 	}
 
 	/**
-	 * Schedule the daily refresh while a key is stored; unschedule otherwise.
+	 * Schedule the background refresh while a key is stored; unschedule otherwise.
 	 */
 	public static function schedule_cron() {
 		$scheduled = wp_next_scheduled( self::CRON_HOOK );
 		if ( self::has_key() ) {
+			// Sites updated from a version that scheduled it daily move to the new recurrence.
+			if ( $scheduled && self::CRON_RECURRENCE !== wp_get_schedule( self::CRON_HOOK ) ) {
+				wp_clear_scheduled_hook( self::CRON_HOOK );
+				$scheduled = false;
+			}
 			if ( ! $scheduled ) {
-				wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', self::CRON_HOOK );
+				wp_schedule_event( time() + HOUR_IN_SECONDS, self::CRON_RECURRENCE, self::CRON_HOOK );
 			}
 		} elseif ( $scheduled ) {
 			wp_clear_scheduled_hook( self::CRON_HOOK );
